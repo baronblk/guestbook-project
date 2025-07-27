@@ -49,7 +49,6 @@ export const publicApi = {
     page?: number;
     per_page?: number;
     rating?: number;
-    featured_only?: boolean;
     search?: string;
     sort_by?: string;
     sort_order?: string;

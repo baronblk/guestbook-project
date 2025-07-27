@@ -24,7 +24,6 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
 
   // Local state for filter controls - Simplified
   const [selectedRating, setSelectedRating] = useState<number | undefined>(filters.rating);
-  const [showFeaturedOnly, setShowFeaturedOnly] = useState(filters.featured_only || false);
   
   // Modal state for image viewing
   const [modalImage, setModalImage] = useState<{ src: string; alt: string } | null>(null);
@@ -37,7 +36,6 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
   const handleFilterUpdate = () => {
     const newFilters = {
       rating: selectedRating || undefined,
-      featured_only: showFeaturedOnly || undefined,
       sort_by: 'created_at' as const,
       sort_order: 'desc' as const,
     };
@@ -47,10 +45,8 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
   // Filter zurücksetzen - Simplified
   const resetFilters = () => {
     setSelectedRating(undefined);
-    setShowFeaturedOnly(false);
     updateFilters({
       rating: undefined,
-      featured_only: undefined,
       sort_by: 'created_at' as const,
       sort_order: 'desc' as const,
     });
@@ -143,7 +139,6 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
                     setSelectedRating(newRating);
                     const newFilters = {
                       rating: newRating || undefined,
-                      featured_only: showFeaturedOnly || undefined,
                       sort_by: 'created_at' as const,
                       sort_order: 'desc' as const,
                     };
@@ -165,7 +160,6 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
                     setSelectedRating(undefined);
                     const newFilters = {
                       rating: undefined,
-                      featured_only: showFeaturedOnly || undefined,
                       sort_by: 'created_at' as const,
                       sort_order: 'desc' as const,
                     };
@@ -179,33 +173,6 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
             </div>
           </div>
 
-          {/* Featured Reviews Checkbox */}
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={showFeaturedOnly}
-              onChange={(e) => {
-                setShowFeaturedOnly(e.target.checked);
-                const newFilters = {
-                  rating: selectedRating || undefined,
-                  featured_only: e.target.checked || undefined,
-                  sort_by: 'created_at' as const,
-                  sort_order: 'desc' as const,
-                };
-                updateFilters(newFilters);
-              }}
-              className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-            />
-            <span className="text-sm text-gray-700">
-              Empfohlen
-              {reviews.filter(r => r.is_featured).length > 0 && (
-                <span className="ml-1 text-xs text-amber-600 font-medium">
-                  ({reviews.filter(r => r.is_featured).length})
-                </span>
-              )}
-            </span>
-          </label>
-
           {/* Results Counter */}
           <div className="ml-auto text-sm text-gray-500">
             <span className="font-medium text-gray-900">{reviews.length}</span> von <span className="font-medium">{pagination.total}</span> Bewertungen
@@ -218,33 +185,13 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
         {reviews.map((review, index) => (
           <div
             key={review.id}
-            className={`group relative bg-white rounded-2xl border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-              review.is_featured 
-                ? 'border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 shadow-lg ring-2 ring-amber-100' 
-                : 'border-gray-200 shadow-md hover:border-gray-300'
-            }`}
+            className="group relative bg-white rounded-2xl border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-gray-200 shadow-md hover:border-gray-300"
           >
-            {/* Featured Badge */}
-            {review.is_featured && (
-              <div className="absolute -top-3 -right-3 z-10">
-                <div className="flex items-center space-x-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <span>Empfohlen</span>
-                </div>
-              </div>
-            )}
-
             <div className="p-6">
               {/* Header mit Avatar */}
               <div className="flex items-start space-x-4 mb-4">
                 <div className="flex-shrink-0">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${
-                    review.is_featured 
-                      ? 'bg-gradient-to-br from-amber-400 to-orange-500' 
-                      : 'bg-gradient-to-br from-blue-500 to-purple-600'
-                  }`}>
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg bg-gradient-to-br from-blue-500 to-purple-600">
                     {review.name.charAt(0).toUpperCase()}
                   </div>
                 </div>
@@ -269,9 +216,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
 
               {/* Content */}
               <div className="mb-4">
-                <div className={`text-gray-700 leading-relaxed ${
-                  review.is_featured ? 'text-gray-800' : ''
-                }`}>
+                <div className="text-gray-700 leading-relaxed">
                   <p className="whitespace-pre-wrap">
                     {embedded 
                       ? apiUtils.truncateText(review.content, 150)

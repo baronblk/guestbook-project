@@ -13,7 +13,6 @@ export interface Review {
   updated_at?: string;
   is_approved: boolean;
   is_visible?: boolean;  // Alternative to is_approved
-  is_featured: boolean;
 }
 
 export interface AdminReview extends Review {
@@ -56,7 +55,6 @@ export interface UpdateReviewForm {
   title?: string;
   content?: string;
   is_approved?: boolean;
-  is_featured?: boolean;
   admin_notes?: string;
 }
 
@@ -85,7 +83,6 @@ export interface LoginForm {
 export interface ReviewFilters {
   rating?: number;
   min_rating?: number;
-  featured_only?: boolean;
   is_visible?: boolean;
   search?: string;
   sort_by?: 'created_at' | 'rating' | 'name';

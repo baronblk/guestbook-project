@@ -173,42 +173,6 @@ const AdminDashboard: React.FC = () => {
             </select>
           </div>
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Minimale Bewertung
-            </label>
-            <select
-              value={filter.min_rating ?? ''}
-              onChange={(e) => setFilter({
-                ...filter,
-                min_rating: e.target.value === '' ? undefined : parseInt(e.target.value)
-              })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Alle</option>
-              <option value="1">1+ Sterne</option>
-              <option value="2">2+ Sterne</option>
-              <option value="3">3+ Sterne</option>
-              <option value="4">4+ Sterne</option>
-              <option value="5">5 Sterne</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Suche
-            </label>
-            <input
-              type="text"
-              value={filter.search ?? ''}
-              onChange={(e) => setFilter({
-                ...filter,
-                search: e.target.value || undefined
-              })}
-              placeholder="Name oder Kommentar..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
         </div>
       </div>
 
