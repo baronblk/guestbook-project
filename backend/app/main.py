@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile, R
 from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import math
@@ -28,6 +28,11 @@ app.add_middleware(
 
 # Static Files für Uploads
 app.mount("/uploads", StaticFiles(directory="/app/uploads"), name="uploads")
+
+# Static Files für Frontend (React Build)
+import os
+if os.path.exists("/app/backend/static"):
+    app.mount("/static", StaticFiles(directory="/app/backend/static/static"), name="static")
 
 # Database Tables erstellen und Admin-User initialisieren
 @app.on_event("startup")
@@ -72,34 +77,14 @@ async def health_check():
     """Health Check für Container"""
     try:
         # Datenbankverbindung testen
+        from sqlalchemy import text
         db = database.SessionLocal()
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db.close()
         
         return {"status": "healthy", "service": "guestbook-api", "database": "connected"}
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Health check failed: {str(e)}")
-
-@app.get("/", response_class=HTMLResponse)
-async def root():
-    """Basis-Endpunkt"""
-    return """
-    <html>
-        <head>
-            <title>Gästebuch API</title>
-        </head>
-        <body>
-            <h1>Gästebuch API</h1>
-            <p>API läuft erfolgreich!</p>
-            <ul>
-                <li><a href="/docs">API Dokumentation</a></li>
-                <li><a href="/api/reviews">Bewertungen anzeigen</a></li>
-                <li><a href="/api/stats">Statistiken</a></li>
-                <li><a href="/health">Health Check</a></li>
-            </ul>
-        </body>
-    </html>
-    """
 
 @app.post("/api/reviews", response_model=schemas.ReviewResponse)
 async def create_review(
@@ -381,6 +366,58 @@ async def admin_export_reviews(
         headers={"Content-Disposition": "attachment; filename=reviews_export.json"}
     )
 
+# Moderation Endpoints
+
+@app.get("/api/admin/reviews/pending", response_model=schemas.ReviewListResponse)
+async def admin_get_pending_reviews(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Ausstehende Bewertungen für Moderation abrufen (Admin)"""
+    skip = (page - 1) * per_page
+    
+    reviews, total = crud.review_crud.get_pending_reviews(
+        db, 
+        skip=skip, 
+        limit=per_page
+    )
+    
+    total_pages = math.ceil(total / per_page)
+    
+    return schemas.ReviewListResponse(
+        reviews=reviews,
+        total=total,
+        page=page,
+        per_page=per_page,
+        total_pages=total_pages
+    )
+
+@app.post("/api/admin/reviews/{review_id}/approve", response_model=schemas.ReviewAdminResponse)
+async def admin_approve_review(
+    review_id: int,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Bewertung genehmigen (Admin)"""
+    approved_review = crud.review_crud.approve_review(db, review_id)
+    if not approved_review:
+        raise HTTPException(status_code=404, detail="Bewertung nicht gefunden")
+    return approved_review
+
+@app.post("/api/admin/reviews/{review_id}/reject", response_model=schemas.ReviewAdminResponse)
+async def admin_reject_review(
+    review_id: int,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Bewertung ablehnen (Admin)"""
+    rejected_review = crud.review_crud.reject_review(db, review_id)
+    if not rejected_review:
+        raise HTTPException(status_code=404, detail="Bewertung nicht gefunden")
+    return rejected_review
+
 # Error Handlers
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
@@ -388,6 +425,18 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         status_code=exc.status_code,
         content={"message": exc.detail, "status_code": exc.status_code}
     )
+
+# Catch-All Route für React Frontend (muss als letztes definiert werden)
+if os.path.exists("/app/backend/static"):
+    @app.get("/{full_path:path}")
+    async def catch_all(full_path: str):
+        """Serve React App für alle nicht-API Routen"""
+        # API-Routen nicht abfangen
+        if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("redoc") or full_path.startswith("uploads") or full_path == "health":
+            raise HTTPException(status_code=404, detail="Not found")
+        
+        # React index.html für alle anderen Routen
+        return FileResponse("/app/backend/static/index.html")
 
 if __name__ == "__main__":
     import uvicorn

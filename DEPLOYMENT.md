@@ -20,7 +20,7 @@ GITHUB_TOKEN: [Ihr GitHub Personal Access Token mit packages:write]
 # Container bauen und zu GHCR hochladen
 git add .
 git commit -m "Production deployment ready"
-git push origin main
+git push origin master
 ```
 
 Die GitHub Actions bauen automatisch die Container und laden sie zu GHCR hoch.

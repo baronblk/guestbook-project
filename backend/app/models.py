@@ -22,7 +22,7 @@ class Review(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Admin-Features
-    is_approved = Column(Boolean, default=True, nullable=False)  # Moderation
+    is_approved = Column(Boolean, default=False, nullable=False)  # Moderation - standardmäßig versteckt
     is_featured = Column(Boolean, default=False, nullable=False)  # Hervorheben
     admin_notes = Column(Text, nullable=True)  # Interne Notizen
     

@@ -30,8 +30,8 @@ class ReviewCRUD:
             rating=review.rating,
             title=review.title,
             content=review.content,
-            ip_address=ip_address,
-            is_approved=True  # Auto-approve, kann später geändert werden
+            ip_address=ip_address
+            # is_approved wird vom Modell-Default (False) gesetzt
         )
         db.add(db_review)
         db.commit()
@@ -143,7 +143,7 @@ class ReviewCRUD:
         }
     
     @staticmethod
-    def bulk_import_reviews(db: Session, reviews: List[schemas.ImportReview], source: str) -> List[models.Review]:
+    def bulk_import_reviews(db: Session, reviews: List[schemas.ImportReview], source: str, auto_approve: bool = True) -> List[models.Review]:
         """Bulk-Import von Bewertungen"""
         created_reviews = []
         
@@ -166,7 +166,7 @@ class ReviewCRUD:
                 created_at=review_data.created_at or datetime.utcnow(),
                 import_source=source,
                 external_id=review_data.external_id,
-                is_approved=True
+                is_approved=auto_approve  # Kann beim Import konfiguriert werden
             )
             db.add(db_review)
             created_reviews.append(db_review)
@@ -176,6 +176,43 @@ class ReviewCRUD:
             db.refresh(review)
         
         return created_reviews
+    
+    @staticmethod
+    def approve_review(db: Session, review_id: int) -> Optional[models.Review]:
+        """Bewertung genehmigen"""
+        db_review = db.query(models.Review).filter(models.Review.id == review_id).first()
+        if not db_review:
+            return None
+        
+        db_review.is_approved = True
+        db_review.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(db_review)
+        return db_review
+    
+    @staticmethod
+    def reject_review(db: Session, review_id: int) -> Optional[models.Review]:
+        """Bewertung ablehnen (verstecken)"""
+        db_review = db.query(models.Review).filter(models.Review.id == review_id).first()
+        if not db_review:
+            return None
+        
+        db_review.is_approved = False
+        db_review.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(db_review)
+        return db_review
+    
+    @staticmethod
+    def get_pending_reviews(db: Session, skip: int = 0, limit: int = 10) -> tuple[List[models.Review], int]:
+        """Ausstehende Bewertungen für Moderation abrufen"""
+        query = db.query(models.Review).filter(models.Review.is_approved == False)
+        query = query.order_by(desc(models.Review.created_at))
+        
+        total = query.count()
+        reviews = query.offset(skip).limit(limit).all()
+        
+        return reviews, total
 
 # Admin User CRUD
 class AdminUserCRUD:
