@@ -27,6 +27,7 @@ const AdminDashboard: React.FC = () => {
   } = useReviewStore();
   
   const [activeTab, setActiveTab] = useState<'reviews' | 'admin' | 'export'>('reviews');
+  const [reviewFilter, setReviewFilter] = useState<'all' | 'approved' | 'hidden'>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -43,11 +44,29 @@ const AdminDashboard: React.FC = () => {
   const loadReviews = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetchReviews({
-        ...filter,
+      // Admin-API verwenden mit entsprechendem Filter
+      let approved_only: boolean | undefined;
+      
+      switch (reviewFilter) {
+        case 'approved':
+          approved_only = true;
+          break;
+        case 'hidden':
+          approved_only = false;
+          break;
+        default:
+          approved_only = undefined; // Alle anzeigen
+      }
+      
+      const response = await adminApi.getReviews({
         page: currentPage,
-        limit: 10
+        per_page: 10,
+        approved_only
       });
+      
+      // Lokaler State aktualisieren
+      reviews.splice(0, reviews.length, ...response.reviews);
+      
       setTotalPages(Math.ceil(response.total / 10));
       setTotalReviews(response.total);
     } catch (error) {
@@ -55,7 +74,7 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [fetchReviews, filter, currentPage]);
+  }, [currentPage, reviewFilter, reviews]);
 
   useEffect(() => {
     loadReviews();
@@ -141,16 +160,16 @@ const AdminDashboard: React.FC = () => {
               Status
             </label>
             <select
-              value={filter.is_visible === undefined ? '' : filter.is_visible.toString()}
-              onChange={(e) => setFilter({
-                ...filter,
-                is_visible: e.target.value === '' ? undefined : e.target.value === 'true'
-              })}
+              value={reviewFilter}
+              onChange={(e) => {
+                setReviewFilter(e.target.value as 'all' | 'approved' | 'hidden');
+                setCurrentPage(1); // Zurück zur ersten Seite
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Alle</option>
-              <option value="true">Sichtbar</option>
-              <option value="false">Versteckt</option>
+              <option value="all">Alle Bewertungen</option>
+              <option value="approved">Nur genehmigte</option>
+              <option value="hidden">Nur versteckte</option>
             </select>
           </div>
           

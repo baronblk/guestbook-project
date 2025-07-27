@@ -54,11 +54,20 @@ class ReviewCRUD:
         sort_order: str = "desc"
     ) -> tuple[List[models.Review], int]:
         """Bewertungen mit Filterung und Pagination abrufen"""
+        import sys
+        print(f"DEBUG CRUD: approved_only={approved_only}, type={type(approved_only)}", file=sys.stderr)
         query = db.query(models.Review)
         
-        # Basis-Filter
-        if approved_only:
+        # Basis-Filter für Genehmigungsstatus
+        if approved_only is True:
+            print("DEBUG CRUD: Filtering for approved only", file=sys.stderr)
             query = query.filter(models.Review.is_approved == True)
+        elif approved_only is False:
+            print("DEBUG CRUD: Filtering for unapproved only", file=sys.stderr)
+            query = query.filter(models.Review.is_approved == False)
+        else:
+            print("DEBUG CRUD: No approval filter (showing all)", file=sys.stderr)
+        # Wenn approved_only None ist, werden alle Reviews angezeigt
         
         # Erweiterte Filter
         if filters:
