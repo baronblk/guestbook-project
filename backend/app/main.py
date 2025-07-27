@@ -281,36 +281,29 @@ async def admin_get_reviews(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     approved_only: Optional[bool] = Query(None),
+    min_rating: Optional[int] = Query(None, ge=1, le=5),
+    search: Optional[str] = Query(None),
     current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
     db: Session = Depends(database.get_db)
 ):
     """Alle Bewertungen abrufen (Admin)"""
-    # Debug: Parameter-Werte ausgeben
-    import sys
-    print(f"DEBUG Admin API: approved_only={approved_only}, type={type(approved_only)}", file=sys.stderr)
-    
-    # TEST: Direktes Testen der Werte
-    if str(approved_only) == "False":
-        print("DEBUG: approved_only ist String 'False'!", file=sys.stderr)
-    elif approved_only is False:
-        print("DEBUG: approved_only ist Boolean False!", file=sys.stderr)
-    elif approved_only is True:
-        print("DEBUG: approved_only ist Boolean True!", file=sys.stderr)
-    elif approved_only is None:
-        print("DEBUG: approved_only ist None!", file=sys.stderr)
-    else:
-        print(f"DEBUG: approved_only ist etwas anderes: {repr(approved_only)}", file=sys.stderr)
-    
     skip = (page - 1) * per_page
     
-    print(f"DEBUG: Calling CRUD with approved_only={approved_only}", file=sys.stderr)
+    # Filter erstellen
+    filters = None
+    if min_rating is not None or search is not None:
+        filters = schemas.ReviewFilter(
+            rating=min_rating,
+            search=search
+        )
+    
     reviews, total = crud.review_crud.get_reviews(
         db, 
         skip=skip, 
         limit=per_page,
-        approved_only=approved_only  # None, True oder False direkt übergeben
+        approved_only=approved_only,
+        filters=filters
     )
-    print(f"DEBUG: CRUD returned {len(reviews)} reviews, total={total}", file=sys.stderr)
     
     total_pages = math.ceil(total / per_page)
     
