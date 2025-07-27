@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: Kx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB
+      MYSQL_DATABASE: guestbook
+      MYSQL_USER: guestuser
+      MYSQL_PASSWORD: whHBJveMvwjs5a6p
+    volumes:
+      - /volume2/docker/guestbook/db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-pKx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - guestbook-network
+
+  app:
+    image: ghcr.io/baronblk/guestbook-project/simple:latest
+    restart: unless-stopped
+    platform: linux/amd64
+    ports:
+      - "3000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: guestuser
+      DB_PASSWORD: whHBJveMvwjs5a6p
+      DB_NAME: guestbook
+      JWT_SECRET_KEY: DeRBC3FDeY8d9nw9WMBwNJ0LpVyvB5ty607r2PHdmQBpqn
+      ADMIN_USERNAME: admin
+      ADMIN_EMAIL: support@dcng.de
+      ADMIN_PASSWORD: whHBJveMvwjs5a6p
+    volumes:
+      - /volume2/docker/guestbook/uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - guestbook-network
+
+networks:
+  guestbook-network:
+    driver: bridge

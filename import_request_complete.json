@@ -1,0 +1,329 @@
+{
+  "reviews": [
+    {
+      "name": "Fam. Hirsch",
+      "content": "Jederzeit wieder. Für uns mit Hund die beste Unterkunft. Es fehlte an nichts. Alles sehr geschmackvoll und liebevoll eingerichtet. Besonders toll fanden wir die Sauna sowie das Massagebett mit Blick aufs Wasser um den Sonnenaufgang oder am Abend den Sternenhimmel beobachten zu können. Selbst bei Regenwetter wird s ein in diesem Domizil nicht langweilig. Wir sagen Danke für diese schöne Zeit die wir dort verbringen durften. Herzliche Grüße aus Berlin",
+      "rating": 5,
+      "title": "Beste Unterkunft mit Hund",
+      "email": "fam.hirsch@example.com",
+      "admin_response": "Vielen herzlichen Dank für die tolle Bewertung. Wir freuen uns immer riesig, wenn wir Gästen die perfekte Auszeit vom Alltag bieten können und sind auch ein wenig stolz, wenn wir das geschafft haben. Sehr gerne begrüßen wir Sie 3 wieder auf dem Coco de Mer.",
+      "created_at": "2024-04-05T00:00:00Z"
+    },
+    {
+      "name": "Irmgard",
+      "content": "Urlaub im August 2023 auf der Coco de Mer Super herzlicher Empfang und Betreuung durch Familie Hartwich! Ein wunderbares Hausboot, mit erstklassigem Ambiente, phantastische Einrichtung - mit Liebe ausgestattet und dekoriert - hier fehlt es an Nichts. Die Sauna ist ein Highlight. Absoluter Erholungsurlaub!",
+      "rating": 5,
+      "title": "Absoluter Erholungsurlaub",
+      "email": "irmgard@example.com",
+      "admin_response": "Wunderbar, dass es Ihnen so gut gefallen hat. Sehr gern begrüßen wir Sie einmal wieder bei uns und verwöhnen Sie im Coco auf dem Wasser.",
+      "created_at": "2024-03-23T00:00:00Z"
+    },
+    {
+      "name": "Christian u. Jana Z.",
+      "content": "Wir habe den Jahreswechsel als Gäste im Coco de Mer verbracht. Und es war zauberhaft. Schon der herzliche Empfang durch Familie H. ließ uns mit Entspannung in die freien Tage starten. Das Feriendomizil ist mit viel Liebe zum Detail eingerichtet, so hatten wir noch eine weihnachtliche Atmosphäre (ich bin ein kleiner Weihnachtsfreak). Auch unsere Hundedame Daisy war willkommen und fand Näpfe und ein Deckchen zum kuscheln vor. Es fehlte einem an nichts. Man kann von hier schöne Spaziergänge mit dem Hund unternehmen und auch das Zentrum ist zu Fuß zu erreichen. Zur Ostsee sind es nur wenige Minuten mit dem Auto. Alles in allem haben wir uns dort verdammt wohl gefühlt, ob entspannt in der eigenen Sauna oder bei Kaminfeuer auf der gemütlichen Couch den Abend ausklingen lassen. Es war einfach herrlich, so dass wir schon den nächsten Besuch im Coco de Mer planen.",
+      "rating": 5,
+      "title": "Zauberhafter Jahreswechsel",
+      "email": "christian.jana@example.com",
+      "admin_response": "Vielen lieben Dank für die tolle Rezension. WIr geben uns alle Mühe, unseren Gästen das Gefühl von zu Hause zu vermitteln und wenn uns das gelingt, sind wir auch einfach nur glücklich. Sehr gerne begrüßen wir Euch wieder bei uns.",
+      "created_at": "2024-01-03T00:00:00Z"
+    },
+    {
+      "name": "Reinhold HANNBERGER",
+      "content": "Ein fantastischer Urlaub. So eine tolle Unterkunft für Mensch und Hund. Es fehlt an nichts! Vom orthopädischen Bett mit Massagefunktion, Sauna mit 3 verschiedenen Wellnessprogrammen, ob Infrarot oder Finnische Sauna, Sonnendeck, Waschmaschine und voll ausgestattete Küche, die keine Wünsche offen lässt. Das Ferienhaus auf dem Wasser ist einzigartig. Können es nur mit gutem Gewissen empfehlen. September 2023 Helga, Reinhold mit den Hunden Dotti und Alma",
+      "rating": 5,
+      "title": "Fantastischer Urlaub",
+      "email": "reinhold.hannberger@example.com",
+      "admin_response": "Ganz herzlichen Dank für die tolle Rezension. Wir bemühen uns immer, für unsere Gäste die bestmögliche Basis für ihre wohlverdiente Auszeit - gern auch zusammen mit ihrem Fellnasen - zu schaffen. Und wenn uns das offenbar so gut gelungen ist, freuen wir uns natürlich riesig. Gerne begrüßen wir Euch einmal wieder auf Eurem Coco de Mer.",
+      "created_at": "2023-10-04T00:00:00Z"
+    },
+    {
+      "name": "Jenny & René",
+      "content": "Wir hatten eine wunderschöne und entspannte Woche auf dem Hausboot. Uns hat es an nichts gefehlt und selbst für unsere Fellnasen war gesorgt. Jeden Tag diesen schönen Ausblick von der Terrasse oder vom Wasser aus zu genießen war einfach ein Traum. Wir kommen gerne wieder!!",
+      "rating": 5,
+      "title": "Entspannte Woche mit Fellnasen",
+      "email": "jenny.rene@example.com",
+      "admin_response": "Wir freuen uns wirklich riesig, dass wir Euer besonderen Woche den passenden Rahmen bieten konnten. Vor allem auch, da sich so ein herzlicher Kontakt zwischen Euch und uns entwickelt hat. Gern tun wir alles uns mögliche, um einen ggf. späteren erneuten Aufenthalt wieder perfekt für euch zu machen.",
+      "created_at": "2023-09-11T00:00:00Z"
+    },
+    {
+      "name": "Das Schmidtsche Rudel",
+      "content": "Urlaub im Coco de Mer heißt Wohlfühlen ab der ersten Sekunde. Wir waren im August 2023 für 2 Wochen auf dem tollen Coco und habe die Zeit wahnsinnig genossen. Bei Ankunft wird man von der lieben Familie Hartwich begrüßt und in all die technischen Wunder des Coco eingeführt. Und dann kann die Erholung auch sofort beginnen, denn es ist alles da, was man dafür braucht. Morgens Sonnenaufgang auf der Terrasse unten, Frühstück dort im Idealfall in der Morgensonne, eine Runde schwimmen im Bodden, chillen auf der gemütlich eingerichteten Dachterrasse, Sonnenuntergang dann auch auf der Dachterrasse. Wo bekommt man schon mal beides an einem Ort. Schön. Und wenn das Wetter mal nordisch steif ist, auch kein Problem. Die Sauna ist ein Traum. Die ganze Wohnung ist urgemütlich, große Couch, liebevolle Gestaltung von allem. Tolle Ausstattung in der Küche. Es gibt NICHTS zu meckern. Und auch unsere Hündin fand den Aufenthalt super. Für die standen zwei Napfe und ein Deckchen bereit als wir ankamen. Das war auch toll, Hundebett mit Boddenblick. Jens und Jens, die beiden lieben Eigentümer, haben da eine Oase der Erholung geschaffen, die man einfach nur lieben, loben und weiterempfehlen kann. Die beiden versorgen einen mit tollen Tipps zu Ausflügen und den besten Torten der Umgebung. Auch ein ganz besonderer Kontakt, so wie wir ihn noch nie erlebt haben bei anderen Objekten. Ihr macht das großartig!!! Wir werden auf alle Fälle sehr, sehr gerne einmal wiederkommen.",
+      "rating": 5,
+      "title": "Wohlfühlen ab der ersten Sekunde",
+      "email": "schmidtsches.rudel@example.com",
+      "admin_response": "Es war uns ein Fest, Euch den Aufenthalt so angenehm wie möglich zu gestalten. Auch wir und Familie Hartwich haben den angenehmen Kontakt sehr genossen. Gern begrüßen wir Euch 3 wieder auf dem Coco de Mer.",
+      "created_at": "2023-08-29T00:00:00Z"
+    },
+    {
+      "name": "Ines",
+      "content": "Wir haben vom 15. -23. Juli diesen Jahres unserem Urlaub in Coco de Mer verbracht und sind vollkommen zufrieden. Das Haus war sehr schön eingerichtet, sodass man sich direkt sehr wohl gefühlt hat. Die großen Fenster im Wohnzimmer von denen man den Ausblick über den Bodden genießen konnte, haben diese heimelige Atmosphäre unterstützt. Der Platz war vollkommen ausreichend für 4 Personen, da es 2 Badezimmern gab, kam man sich nie ins Gehege. Ich würde allerdings nicht empfehlen mit mehr als 4 Personen anzureisen, da es dann doch etwas eng wird. Das Haus war zudem auch gut ausgestattet. In der Küche waren alle notwendigen Sachen vorhanden, um sich beispielsweise etwas Schönes zu Kochen. Auch verschiedene Gewürze standen zur Verfügung. Die Lage ist wie bereits erwähnt super. Man liegt jedoch etwas abgeschieden vom Zentrum der Stadt, daher der eine Stern Abzug. Das Zentrum ist aber dennoch gut zu Fuß oder mit dem Fahrrad erreichbar. Zusammenfassend war es ein rundum gelungener Urlaub und ich kann Coco de Mer weiterempfehlen.",
+      "rating": 4,
+      "title": "Vollkommen zufrieden",
+      "email": "ines@example.com",
+      "admin_response": "",
+      "created_at": "2023-08-03T00:00:00Z"
+    },
+    {
+      "name": "Ingenieur",
+      "content": "Sehr positiv. Im Sommer hatten wir kein Kamingas verbraucht, waren aber zur Zahlung verpflichtet. Bei nochmaliger Buchung hätten wir eine Gutschrift erhalten. Wir hätten bei den Tagespreisen von ca. Euro 400.-mehr Kulanz erwartet.",
+      "rating": 4,
+      "title": "Sehr positiv",
+      "email": "ingenieur@example.com",
+      "admin_response": "",
+      "created_at": "2023-08-03T00:00:00Z"
+    },
+    {
+      "name": "Annett",
+      "content": "Eine entspannte Woche im gemütlichen Coco de Mer.",
+      "rating": 5,
+      "title": "Entspannte Woche",
+      "email": "annett@example.com",
+      "admin_response": "Vielen Dank für die klasse Bewertung. Wir geben uns alle Mühe, dass Euer nächster Aufenthalt bei uns wieder mindestens genauso toll für Euch wird.",
+      "created_at": "2023-06-11T00:00:00Z"
+    },
+    {
+      "name": "Barbara und Ricky",
+      "content": "Wir haben im April eine wunderschöne Urlaubswoche auf dem Coco de Mer verbracht,genossen die Aussichten, das Plätschern der Wellen, die Ruhe, das sehr geschmackvoll eingerichtete Floatinghaus... Sehr zu unserer Freude konnten wir sogar problemlos unseren Aufenthalt verlängern und wir sind uns sicher, dass wir mehr von diesem sehr entspannendem Urlaub wollen und auf jeden Fall wieder kommen!!! Liebe Grüße an Jens & Jens sowie die netten Hartwigs, die uns sehr freundlich empfangen und eingewiesen haben!!!",
+      "rating": 5,
+      "title": "Wunderschöne Urlaubswoche",
+      "email": "barbara.ricky@example.com",
+      "admin_response": "Es tut immer wieder gut, solche Rezensionen zu lesen. Wir bemühen uns auch für Euren nächsten Aufenthalt, alles wieder perfekt vorzubereiten.",
+      "created_at": "2023-05-08T00:00:00Z"
+    },
+    {
+      "name": "Florian",
+      "content": "Sehr schöner Kurzurlaub. Wir waren sehr begeistert von der Ausstattung, den liebevollen Details sowie der schönen Lage. Gerade als Ausgangspunkt für Radtouren entlang des Boddens bis hin zur Ostsee, ist es ein perfekter Standort. Zum entspannen lädt die schöne Dachterrasse und der Kamin, aber vor allem die schöne Sauna, ein. Es war ein rundum schöner Aufenthalt in einem wunderschönem Haus.",
+      "rating": 5,
+      "title": "Sehr schöner Kurzurlaub",
+      "email": "florian@example.com",
+      "admin_response": "Wir danken Euch für die tolle Bewertung und freuen uns riesig über das Lob - und die bereits erfolgte Weiterempfehlung.",
+      "created_at": "2023-05-03T00:00:00Z"
+    },
+    {
+      "name": "anonym",
+      "content": "Ein Hausboot im Winter ist Balsam für die Seele - besonders, wenn es so schön und gemütlich UND dann auch noch so komfortabel und praktisch ausgestattet ist wie das Coco de Mer!!",
+      "rating": 5,
+      "title": "Balsam für die Seele",
+      "email": "anonym@example.com",
+      "admin_response": "Vielen Dank für die feine Bewertung. Kommt gern einmal wieder, wir freuen uns.",
+      "created_at": "2023-04-15T00:00:00Z"
+    },
+    {
+      "name": "Tilo Weidig",
+      "content": "Ein Traum! - hier ist ein Selbstversorgerurlaub auf allerhöchstem Niveau möglich. Bei der Ausstattung des Coco de mer fehlt es wahrlich an nichts. Hier wurde mit viel Liebe ein wunderschönes und kuscheliges Wohlfühlambiente geschaffen. Die Freundlichkeit der Vermieter, sowie die Umgebung mit der Nähe zur Ostsee umrahmen diese Entspannungsoase. Ein ganz großes Plus: Unsere beiden Vierbeiner waren ebenfalls herzlich willkommen und haben sich pudelwohl gefühlt. Was will man mehr?.... Wiederkommen!",
+      "rating": 5,
+      "title": "Ein Traum!",
+      "email": "tilo.weidig@example.com",
+      "admin_response": "Ganz herzlichen Dank für die tolle Rezension. Genau das war unser Ansporn beim Einrichten des Hauses. Wir sind glücklich, dass es so gut angekommen ist - und dass Ihr wiederkommen wollt",
+      "created_at": "2023-02-16T00:00:00Z"
+    },
+    {
+      "name": "Familie Anger",
+      "content": "Da muss man hin ! Dieses liebe- und geschmackvoll eingerichtete Haus lädt zum wiederkommen ein. Sowohl Aktiv- als auch Wellnessurlauber und Hundebesitzer können in diesem Haus und dieser herrlichen Gegend einen unvergesslichen Urlaub in Deutschland verleben. Sauberkeit und Service sind Top und die netten Vermieter lassen sich immer etwas einfallen, um die Gäste zu beeindrucken. Also auf bald ! LG Fam. Anger",
+      "rating": 5,
+      "title": "Da muss man hin!",
+      "email": "familie.anger@example.com",
+      "admin_response": "Danke für das große Lob, das tut gut. Und das Beste ist: Ihr kommt wieder: Herzlich gern.",
+      "created_at": "2023-01-16T00:00:00Z"
+    },
+    {
+      "name": "Anja und Gerd",
+      "content": "Traumhafte Auszeit im Coco de Mer. Das Coco de Mer ist ein Geheimtipp aus drei Gründen 1.Ein schwimmenden Haus in romantischer Umgebung und Top Lage 2. Im liebevoll und mit vielen romantischen Überraschungen ausgestatteten Haus fehlt es an nichts 3. Und die wellnessbehandlung neben der Sauna und infrarotkabine im Haus durch Herrn Müller ist das Sahnehäubchen obendrauf ...besonders die kräuterstempelmassage ein Traum...der Mann versteht sein Handwerk.",
+      "rating": 5,
+      "title": "Traumhafte Auszeit",
+      "email": "anja.gerd@example.com",
+      "admin_response": "Danke für die Komplimente. Und ja: Wellness ist auch uns wichtig, daher haben wir alles getan, dies im Rahmen der Möglichkeiten unseren Gästen zu bieten. Wir freuen uns riesig, dass es so gut ankommt.",
+      "created_at": "2023-01-16T00:00:00Z"
+    },
+    {
+      "name": "Karl-Uwe und Katrin",
+      "content": "Das schwimmende Ferienhaus ist der Knaller. Die liebe zum Detail ist bei der Ausstattung überall zu erkennen. Ob man einen Urlaub zum relaxen (vorhandene Sauna, 2 wunderschöne Terrassen und eine sehr gemütliche Wohnlandschaft) oder lieber aktiv sein möchte( direkter Zugang von der Terrasse in den Bodden, Fahrradweg vor dem Bootssteg). Wir waren nur zu einem Kurztrip in diesem herrlichen Urlaubsdomizil. Man fühlt sich garantiert wohl, egal welche Jahreszeit.",
+      "rating": 5,
+      "title": "Der Knaller",
+      "email": "karluwe.katrin@example.com",
+      "admin_response": "Danke für die Blumen, so ein Lob tut wirklich gut und ist der beste Lohn für die Mühen. Gern einmal wieder.",
+      "created_at": "2023-01-13T00:00:00Z"
+    },
+    {
+      "name": "Konstanze, Sigrid, Ralf und Heiko",
+      "content": "Wir haben eine super schöne Winterwoche im liebevoll eingerichteten und voll ausgestatteten Luxus Hausboot verbracht. Das weihnachtliche Ambiente und der Blick von der Dachterrasse auf das Silvester Feuerwerk haben den Aufenthalt perfekt gemacht. Coco de Mer wir kommen wieder.",
+      "rating": 5,
+      "title": "Super schöne Winterwoche",
+      "email": "konstanze.gruppe@example.com",
+      "admin_response": "Wir freuen uns riesig, dass Euch unsere Weihnachtsatmosphäre so gut gefallen hat. Wir geben uns auch fürs nächste Mal alle Mühe.",
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "name": "Hutzenohmd",
+      "content": "Es war uns schon lange ein Bedürfnis das Kunstwerk mit Herz zu besichtigen. Ich kann nur sagen, es ist mehr als gelungen, ich war überrascht und begeistert und komme aus dem Schwärmen gar nicht raus.",
+      "rating": 5,
+      "title": "Kunstwerk mit Herz",
+      "email": "hutzenohmd@example.com",
+      "admin_response": "Es war ein toller Abend mit Euch. Wir freuen uns riesig, dass es Euch so gut gefallen hat. Vielleicht mal wieder?",
+      "created_at": "2022-11-27T00:00:00Z"
+    },
+    {
+      "name": "Gabriele S.",
+      "content": "Es war für uns alle ein Traumurlaub. Dass wir unser Punktevieh dann auch noch mitbringen durften, war einfach toll. Vielen Dank an den Service. Wir wissen, dass Reinigen nach Hundebesuch schon sehr aufwendig ist. Wir haben uns täglich nach den Aktivitäten auf die Rückankunft im Hausboot gefreut. Dort hat der Tag immer den krönenden Abschluss erhalten. Es hat an nichts gefehlt. Danke Gabriele Schuchardt und Familie",
+      "rating": 5,
+      "title": "Traumurlaub mit Punktevieh",
+      "email": "gabriele.s@example.com",
+      "admin_response": "Vielen Dank für die super Rezension. Wir freuen uns über jeden zufriedenen Gast und hoffen, Sie einmal wieder begrüßen zu dürfen.",
+      "created_at": "2022-10-24T00:00:00Z"
+    },
+    {
+      "name": "Susanne Freiberg",
+      "content": "Wir waren im September für 1 Woche anlässlich Geburtstag meiner Schwiegermutter (88Jahre) da . Ich kann nur sagen das Haus ist super schön, sauber , liebevoll eingerichtet und Herr Flagel ein super netter Mann der uns viele Hinweise zum Ort geben hat ! Dieses Hausboot kann ich nur weiterempfehlen und würde auch sofort wenn die Zeit es zulassen würde wieder hin fahren ! Wir haben uns sehr wohl gefühlt und nette Gespräche mit Jens waren einfach nur schön. Dankeschön nochmal für den wunderschönen Blumenstrauß für meine Schwiegermutter. Ach ja hab ich fast vergessen : Meine zwei süßen Hunden haben sich auch dort pudelwohl gefühlt! Körbchen und frisches Wasser war bei Ankunft schon bereitgestellt! Sogar Kotbeutel für die waren vorhanden ! Einfach klasse Service und ganz nette Liebe Vermieter + Herr Flagel ! Wir kommen wieder",
+      "rating": 5,
+      "title": "Geburtstag der Schwiegermutter",
+      "email": "susanne.freiberg@example.com",
+      "admin_response": "Wie schön, so viel Lob zu lesen. Es war uns eine Freude, Euch auf dem Coco - noch dazu zum Ehrentag - verwöhnen zu können/lassen. Sehr sehr gern wieder.",
+      "created_at": "2022-10-24T00:00:00Z"
+    },
+    {
+      "name": "Cornelia W.",
+      "content": "Wir buchten das Coco de Mer für eine gemeinsame Familienauszeit und konnten diese dank hervorragender Vorbereitungen seitens der Gastgeber in vollen Zügen genießen. Angefangen bei den tollen und unkomplizierten Buchungs-und Rechnungsmodalitäten, über die erhaltenen wichtigen Informationen vorab in Form einer digitalen Infomappe (so war die Möglichkeit gegeben, sich im Vorfeld über das Haus selbst sowie über Ausflugsziele, vorhandene Einkaufsmöglichkeiten bis hin zu Ärzten in der Umgebung zu informieren) bis natürlich zu dem sehr liebevoll eingerichtetem und sehr sauberem Haus selbst....rundum perfekt! In diesem Haus wurde wirklich an alles gedacht und man konnte spüren, dass hier alles zur Zufriedenheit des Gastes vorbereitet wurde. Vielen Dank an die Gastgeber und auch den Objektbetreuer vor Ort für den tollen Service!!!!",
+      "rating": 5,
+      "title": "Familienauszeit rundum perfekt",
+      "email": "cornelia.w@example.com",
+      "admin_response": "Ganz lieben Dank für so viel herzliches Lob. Das ist eine wunderbare Bestätigung für unsere Bemühungen und Ansporn, noch besser zu werden. Gern geben wir den Dank auch an unseren Objektbetreuer weiter, der sich ganz sicher auch riesig freuen wird.",
+      "created_at": "2022-08-15T00:00:00Z"
+    },
+    {
+      "name": "K_ Illing",
+      "content": "Wir waren da zu viert für 11 Tage Und was soll ich Sagen? Das Haus ist Bombe. Es hat alles drin was das Herz begehrt. Massage-Betten, Sauna, Kamin, Dachterrasse... Alles Modern eingerichtet, und auch kleine Annehmlichkeiten (Getränke) oder andere Alltäglichen Sachen wie z.B einige Gewürze Tees etc sind ebenfalls vorhanden. Vermieter sind sehr nett und gehen auf die Wünsche anderer ein",
+      "rating": 5,
+      "title": "Das Haus ist Bombe",
+      "email": "k.illing@example.com",
+      "admin_response": "Vielen Dank für die tolle Bewertung. Wir freuen uns, dass es Euch so gut gefallen hat und auch über den persönlichen Kontakt ab und zu. Gern begrüßen wir Euch einmal wieder im Coco wenn Ihr mögt.",
+      "created_at": "2022-08-12T00:00:00Z"
+    },
+    {
+      "name": "Denise",
+      "content": "Es waren zwei traumhafte Wochen mit tollen Erlebnissen. Egal ob SUP, Wanderungen, Städtetrips, ein Tag am Meer und und und. Ein besonderes Highlight war die Wellnessoase mit Sauna mit anschließender Abkühlung im Bodden oder auf der Terrasse, wobei man auch seinen Blick weitläufig über das Wasser schweifen lassen kann. Für Frühaufsteher ist zudem der Sonnenaufgang ein tolles Erlebnis, welchen man direkt aus dem Schlafzimmerfenster sehen und genießen kann. In Familie haben wir die tollen Frühstücke auf der Terrasse bei besten Blick und Sonne genossen. Es ist auf jeden Fall für jeden Geschmack etwas dabei.",
+      "rating": 5,
+      "title": "Zwei traumhafte Wochen",
+      "email": "denise@example.com",
+      "admin_response": "Vielen Dank für die wirklich schöne Rezension. Gerne begrüßen wir Euch einmal wieder auf dem Coco",
+      "created_at": "2022-08-08T00:00:00Z"
+    },
+    {
+      "name": "Jana Klässig",
+      "content": "Sehr luxuriöses Haus mit allen Annehmlichkeiten. Der Blick auf das Wasser ist spitzenmäßig. Da schmeckt das Frühstück richtig gut. Auch die SUPs machen riesigen Spaß. Nach der Sauna rein ins Wasser. Wo gibt es das schon. Schwimmen ist auch möglich aber bitte die Beine hoch nehmen. Mit dem Fahrrad kann man schöne Touren unternehmen, z.B. nach Dierhagen zum Strand.Wir haben uns sehr wohl gefühlt. Juli 2022",
+      "rating": 5,
+      "title": "Sehr luxuriöses Haus",
+      "email": "jana.klaessig@example.com",
+      "admin_response": "Vielen Dank für die tolle Rezension. Wir freuen uns sehr, dass es Ihnen so gut gefallen hat. Vielleicht dürfen wir ja wieder einmal Ihre Gastgeber sein. Alles Gute bis dahin, Ihr Team vom Coco de Mer.",
+      "created_at": "2022-07-29T00:00:00Z"
+    },
+    {
+      "name": "R L F",
+      "content": "Ein wirklich tolles Hausboot mit allem an Luxus, was man sich für einen gelungenen Urlaub so vorstellt. Es war geschmackvoll eingerichtet und sehr gut ausgestattet... es fehlte uns an nichts. Die Sauna war eine gelungene Abwechslung. Unser Highlight war aber der schöne Ausblick aufs Wasser beim Aufwachen, Entspannen auf der Couch oder Kochen. Wir haben es genossen auf der Bugterrasse zu frühstücken und auf der Dachterrase den Sonnenuntergang zu beobachten. Netter und unkomplizierter Kontakt zu den Besitzern und dem Verwalter. Nur zu empfehlen!!!",
+      "rating": 5,
+      "title": "Tolles Hausboot mit Luxus",
+      "email": "rlf@example.com",
+      "admin_response": "Herzlichen Dank für die super Rezension und die tollen Fotos. Wir freuen uns sehr, dass es Ihnen so gut gefallen hat. Kommen Sie doch gerne einmal wieder oder empfehlen uns weiter. Herzlichst, das Team des Coco de Mer.",
+      "created_at": "2022-07-19T00:00:00Z"
+    },
+    {
+      "name": "Marcel Müller VissionSpa",
+      "content": "Der Traum eines jeden Besuchers, mit einem unvergesslichen Ambiente. Massage und Wellness kann in jeglicher Form dazu gebucht werden, ein vollendeter Entspannungsmodus kann erfüllt werden, egal ob bei warmen Sonnenstrahlen auf dem Oberdeck oder mit schönster Aussicht und den Bodden mit dem Blick auf das Idyllische Ribnitz Damgarten. Wir heißen Sie herzlich Willkommen. Mit freundlichem Gruß Marcel Müller Vission Spa und Team",
+      "rating": 5,
+      "title": "Traum mit unvergesslichem Ambiente",
+      "email": "marcel.mueller@vission-spa.com",
+      "admin_response": "Ganz herzlichen Dank für die Möglichkeit der Zusammenarbeit. Dies rundet unser Angebot ideal ab und die Gäste kommen in den Genuss Eurer heilenden Hände.",
+      "created_at": "2022-06-20T00:00:00Z"
+    },
+    {
+      "name": "Uli Münch",
+      "content": "Wir waren als Teil des Einrichterteams auf dem Hausboot und können sagen, dass sich die Strapatzen mehr als gelohnt haben. Die Vermieter haben mit viel Aufwand, tolle Ideen für Luxus und vor allem Komfort umgesetzt. Seien es die übergroßen Betten, der Schiebetürenschrank im Schlafzimmer mit Einbautresor, die elektrisch verbreiterbare Sitzfläche der Couch bis hin zur Sauna und noch so vieles mehr. Sicher werde ich das außergewöhnliche Haus im Bodden in einem meiner nächsten Urlaube selbst einmal richtig genießen.",
+      "rating": 5,
+      "title": "Einrichterteam begeistert",
+      "email": "uli.muench@example.com",
+      "admin_response": "Wir danken dir für die große Hilfe beim Einrichten und das tolle Feedback. Du bist herzlich auch mal nur zur Entspannung willkommen",
+      "created_at": "2022-06-12T00:00:00Z"
+    },
+    {
+      "name": "Britt Anger",
+      "content": "Ein liebevoll und luxuriös ausgestattetes Urlaubsdomizil für alle Altersklassen! Das schwimmende Haus Coco de Mer bietet alles für erholsame Urlaubstage: eine Terrasse mit Morgensonne zum Frühstücken, eine Sonnenterasse zum chillen und für kühle Tage einen Kamin und Sauna. Freizeitmöglichkeiten, wie z. B. Baden, Segeln Paddeln und Radfahren oder einfach im Lesecafe schmökern, gibt es reichlich. Wir kommen gerne wieder !",
+      "rating": 5,
+      "title": "Luxuriöses Urlaubsdomizil",
+      "email": "britt.anger@example.com",
+      "admin_response": "Wir freuen uns sehr, dass es Euch so gut gefallen hat. Da haben sich die Mühen gelohnt. Kommt gern einmal wieder.",
+      "created_at": "2022-06-12T00:00:00Z"
+    },
+    {
+      "name": "Jan Meiwald",
+      "content": "Sehr schön und liebevoll eingerichtet . Die Schlüssel Übergabe lief problemlos. Haben eine Stunde vorher angerufen. Als wir ankamen war der Verwalter vor Ort und ließ uns ins Haus. Dabei gab er einen kurzen Abriß über die Technischen Einrichtungen. Es giebt online gute Erklärviedeos, zur Nutzung der Sauna und auch der Nutzung der Terrassenmöbel Handtuchheizer und zur Klimaanlage. Es ist empfehlenswert diese anzuschauen. Bis jetzt fühlen wir uns sehr Wohl in diesem Haus. Die Sauna ist sehr gemütlich. Die Küche ist modern eingerichtet. Küchenmesser sehr scharf.Meine Mädels haben sich den Empfohlen Physiotherapeuten ins Haus bestellt und waren von der Behandlung hier im Haus sehr begeistert. Ist nur zu empfehlen.",
+      "rating": 5,
+      "title": "Liebevoll eingerichtet",
+      "email": "jan.meiwald2@example.com",
+      "admin_response": "Vielen Dank für die ausführliche und super Rezension. Klasse, dass es Euch so gut gefällt. Genießt den Aufenthalt weiterhin.",
+      "created_at": "2022-06-12T00:00:00Z"
+    },
+    {
+      "name": "sebastian müller",
+      "content": "Schönes Hausboot, liebevoll eingerichtet, lädt zum entspannen ein. Für alle die das erste Mal auf einem Hausboot sind: es liegt sehr ruhig im Wasser.",
+      "rating": 5,
+      "title": "Schönes Hausboot",
+      "email": "sebastian.mueller@example.com",
+      "admin_response": "Herzlichen Dank für die tolle Bewertung und den hilfreichen Tipp an andere Gäste.",
+      "created_at": "2022-06-12T00:00:00Z"
+    },
+    {
+      "name": "Daniela",
+      "content": "Ein wunderschönes Hausboot, an einem tollen Ort lädt zu ruhigen entspannten Ferien ein. Hier kann man dem Alltagsstress für ein paar Tage entfliehen. Vielen Dank",
+      "rating": 5,
+      "title": "Wunderschönes Hausboot",
+      "email": "daniela@example.com",
+      "admin_response": "Vielen Dank für die tolle Bewertung. Wir geben uns jede Mühe, diese Entspannung allen unseren Gästen zu ermöglichen.",
+      "created_at": "2022-06-12T00:00:00Z"
+    },
+    {
+      "name": "Philipp G",
+      "content": "Wir möchten uns hier auch nochmal ganz offiziell für den sehr angenehmen Aufenthalt bedanken. Wer einmal dem Alltagsstress entfliehen möchte ist hier gut aufgehoben. Die Einrichtung ist sehr modern. Meine persönlichen Highlights waren sowohl die Sauna, als auch das Aufwachen am Morgen mit direktem Blick aufs Wasser. Bis zum nächsten Mal!",
+      "rating": 5,
+      "title": "Sehr angenehmer Aufenthalt",
+      "email": "philipp.g@example.com",
+      "admin_response": "Herzlichen Dank für die super Bewertung. Wir freuen uns, dass es Euch so gut gefallen hat und begrüßen Euch gern einmal wieder bei uns.",
+      "created_at": "2022-06-12T00:00:00Z"
+    },
+    {
+      "name": "klein Lisa",
+      "content": "Ein wunderschönes Hausboot, mit allem was das Herz begehrt. Ich konnte mich dort super entspannen und habe meine Zeit dort sehr genossen. Sehr zu empfehlen",
+      "rating": 5,
+      "title": "Alles was das Herz begehrt",
+      "email": "lisa.klein@example.com",
+      "admin_response": "Wir freuen uns, dass es Ihnen so gefallen hat. Gern begrüßen wir Sie wieder einmal im Coco de Mer.",
+      "created_at": "2022-06-12T00:00:00Z"
+    },
+    {
+      "name": "Marcel Müller VissionSpa",
+      "content": "Der Traum eines jeden Besuchers, mit einem unvergesslichen Ambiente. Massage und Wellness kann in jeglicher Form dazu gebucht werden, ein vollendeter Entspannungsmodus kann erfüllt werden, egal ob bei warmen Sonnenstrahlen auf dem Oberdeck oder mit schönster Aussicht und den Bodden mit dem Blick auf das Idyllische Ribnitz Damgarten. Wir heißen Sie herzlich Willkommen. Mit freundlichem Gruß Marcel Müller Vission Spa und Team",
+      "rating": 5,
+      "title": "Unvergessliches Ambiente",
+      "email": "marcel.mueller2@vission-spa.com",
+      "admin_response": "Vielen Dank für die Bereitschaft, unseren Gästen Ihre Dienste auch vor Ort anzubieten. Wir durften es ja exklusiv vorab schon testen und genießen. Prädikat: Besonders empfehlenswert.",
+      "created_at": "2022-06-05T00:00:00Z"
+    },
+    {
+      "name": "René",
+      "content": "Sehr schönes Domizil wollen wir hoffen dass es bald losgehen kann. Viele Grüße",
+      "rating": 5,
+      "title": "Sehr schönes Domizil",
+      "email": "rene@example.com",
+      "admin_response": "Vielen Dank Euch - auch für die hilfreichen Tipps heute",
+      "created_at": "2021-07-11T00:00:00Z"
+    },
+    {
+      "name": "Ramona",
+      "content": "Genial, so stell ich mir den nächsten Urlaub vor. Noch eine Schönwettergarantie dazu und alles ist perfekt. Es gibt Personal bei eurem Lieblingsbäcker, die Interesse zeigen und im Belegungsplan vorgemerkt sein möchten. Wir wünschen viel Erfolg, einen vollen Belegungskalender und nur zufriedene Gäste. Wir sind dabei.",
+      "rating": 5,
+      "title": "Genial, so stell ich mir Urlaub vor",
+      "email": "ramona@example.com",
+      "admin_response": "Prima, wir freuen uns auf Euch. Über die Schönwettergarantie reden wir nochmal, aber wir haben ja alternativ tolle Betten zum den ganzen Tag drin kuscheln.",
+      "created_at": "2021-07-11T00:00:00Z"
+    }
+  ],
+  "source": "manual"
+}

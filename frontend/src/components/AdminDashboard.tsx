@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
 import { useReviewStore } from '../store/reviewStore';
@@ -11,6 +12,7 @@ import Pagination from './Pagination';
 import ImageModal from './ImageModal';
 import SessionTimer from './SessionTimer';
 import SessionExtensionButton from './SessionExtensionButton';
+import ModerationPanel from './ModerationPanel';
 
 interface CreateAdminForm {
   username: string;
@@ -20,6 +22,7 @@ interface CreateAdminForm {
 
 const AdminDashboard: React.FC = () => {
   const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
   const { 
     reviews, 
     filter, 
@@ -32,7 +35,7 @@ const AdminDashboard: React.FC = () => {
   // Session-Monitoring aktivieren (alle 3 Minuten)
   useSessionMonitor(3);
   
-  const [activeTab, setActiveTab] = useState<'reviews' | 'admin' | 'export'>('reviews');
+  const [activeTab, setActiveTab] = useState<'reviews' | 'moderation' | 'admin' | 'export'>('moderation');
   const [reviewFilter, setReviewFilter] = useState<'all' | 'approved' | 'hidden'>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -407,6 +410,13 @@ const AdminDashboard: React.FC = () => {
               <SessionExtensionButton className="hidden sm:flex" />
               
               <button
+                onClick={() => navigate('/')}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                ← Zurück zum Gästebuch
+              </button>
+              
+              <button
                 onClick={logout}
                 className="bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
               >
@@ -431,6 +441,17 @@ const AdminDashboard: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <nav className="flex space-x-8 mb-8">
           <button
+            onClick={() => setActiveTab('moderation')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'moderation'
+                ? 'border-orange-500 text-orange-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Moderation
+          </button>
+          
+          <button
             onClick={() => setActiveTab('reviews')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'reviews'
@@ -438,7 +459,7 @@ const AdminDashboard: React.FC = () => {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Bewertungen
+            Alle Bewertungen
           </button>
           
           <button
@@ -465,6 +486,7 @@ const AdminDashboard: React.FC = () => {
         </nav>
 
         {/* Tab Content */}
+        {activeTab === 'moderation' && <ModerationPanel />}
         {activeTab === 'reviews' && renderReviewsTab()}
         {activeTab === 'admin' && renderAdminTab()}
         {activeTab === 'export' && renderExportTab()}

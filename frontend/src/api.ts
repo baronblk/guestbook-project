@@ -11,8 +11,11 @@ import {
   AdminUser
 } from './types';
 
-// Base API configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+// Base API configuration - use relative URL when in combined container
+const API_BASE_URL = process.env.REACT_APP_API_URL || (
+  // Always use relative URLs when deployed (including localhost in combined container)
+  ''
+);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -176,6 +179,25 @@ export const adminApi = {
     const response = await api.get('/api/admin/export', {
       responseType: 'blob',
     });
+    return response.data;
+  },
+
+  // Moderation
+  async getPendingReviews(params: {
+    page?: number;
+    per_page?: number;
+  } = {}): Promise<ReviewListResponse> {
+    const response: AxiosResponse<ReviewListResponse> = await api.get('/api/admin/reviews/pending', { params });
+    return response.data;
+  },
+
+  async approveReview(id: number): Promise<AdminReview> {
+    const response: AxiosResponse<AdminReview> = await api.post(`/api/admin/reviews/${id}/approve`);
+    return response.data;
+  },
+
+  async rejectReview(id: number): Promise<AdminReview> {
+    const response: AxiosResponse<AdminReview> = await api.post(`/api/admin/reviews/${id}/reject`);
     return response.data;
   },
 };

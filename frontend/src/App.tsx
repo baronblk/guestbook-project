@@ -61,9 +61,6 @@ const App: React.FC = () => {
                   {/* Formular zur Bewertungsabgabe - zentriert oben */}
                   <div className="mb-12">
                     <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                        Neue Bewertung abgeben
-                      </h2>
                       <ReviewForm />
                     </div>
                   </div>

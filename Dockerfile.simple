@@ -1,0 +1,39 @@
+# Multi-stage Build: Frontend + Backend in einem Container (ohne nginx)
+FROM node:18-alpine AS frontend-builder
+
+# Frontend Build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci --only=production
+COPY frontend/ ./
+RUN npm run build
+
+# Python Backend Stage
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Backend Setup
+WORKDIR /app
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend code
+COPY backend/ ./backend/
+COPY wait-for-db.py ./backend/
+
+# Copy built frontend from previous stage to static files directory
+COPY --from=frontend-builder /app/frontend/build ./backend/static
+
+# Create uploads directory
+RUN mkdir -p /app/uploads && chmod 755 /app/uploads
+
+# Expose port 8000 (FastAPI)
+EXPOSE 8000
+
+# Change to backend directory and start FastAPI
+WORKDIR /app/backend
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

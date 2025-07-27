@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: guestbook-mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-super_secure_root_password_2024}
+      MYSQL_DATABASE: ${DB_NAME:-guestbook}
+      MYSQL_USER: ${DB_USER:-guestbook_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secure_database_password_2024}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - guestbook-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  backend:
+    image: ghcr.io/${GITHUB_REPOSITORY:-baronblk/guestbook-project}/backend:${IMAGE_TAG:-latest}
+    container_name: guestbook-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: mysql+pymysql://${DB_USER:-guestbook_user}:${DB_PASSWORD:-secure_database_password_2024}@mariadb:3306/${DB_NAME:-guestbook}
+      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production-xyz123}
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-change-in-production-abc456}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@yourdomain.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-secure_admin_password_2024}
+      CORS_ORIGINS: ${API_CORS_ORIGINS:-http://localhost,http://192.168.1.100}
+    volumes:
+      - backend_uploads:/app/uploads
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - guestbook-network
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  frontend:
+    image: ghcr.io/${GITHUB_REPOSITORY:-baronblk/guestbook-project}/frontend:${IMAGE_TAG:-latest}
+    container_name: guestbook-frontend
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://192.168.1.100:8000}
+    depends_on:
+      - backend
+    networks:
+      - guestbook-network
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+volumes:
+  mariadb_data:
+    driver: local
+  backend_uploads:
+    driver: local
+
+networks:
+  guestbook-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

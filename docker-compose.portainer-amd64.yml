@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-Kx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB}
+      MYSQL_DATABASE: ${DB_NAME:-guestbook}
+      MYSQL_USER: ${DB_USER:-guestuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-whHBJveMvwjs5a6p}
+    volumes:
+      - guestbook_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-Kx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - guestbook-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  backend:
+    image: ghcr.io/baronblk/guestbook-project/backend:latest
+    restart: unless-stopped
+    platform: linux/amd64
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: ${DB_USER:-guestuser}
+      DB_PASSWORD: ${DB_PASSWORD:-whHBJveMvwjs5a6p}
+      DB_NAME: ${DB_NAME:-guestbook}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-DeRBC3FDeY8d9nw9WMBwNJ0LpVyvB5ty607r2PHdmQBpqn}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-support@dcng.de}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+    volumes:
+      - guestbook_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - guestbook-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  frontend:
+    image: ghcr.io/baronblk/guestbook-project/frontend:latest
+    restart: unless-stopped
+    platform: linux/amd64
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - backend
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:8000}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - guestbook-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+
+volumes:
+  guestbook_db:
+    driver: local
+  guestbook_uploads:
+    driver: local
+
+networks:
+  guestbook-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
