@@ -281,28 +281,17 @@ async def admin_get_reviews(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     approved_only: Optional[bool] = Query(None),
-    min_rating: Optional[int] = Query(None, ge=1, le=5),
-    search: Optional[str] = Query(None),
     current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
     db: Session = Depends(database.get_db)
 ):
     """Alle Bewertungen abrufen (Admin)"""
     skip = (page - 1) * per_page
     
-    # Filter erstellen
-    filters = None
-    if min_rating is not None or search is not None:
-        filters = schemas.ReviewFilter(
-            rating=min_rating,
-            search=search
-        )
-    
     reviews, total = crud.review_crud.get_reviews(
         db, 
         skip=skip, 
         limit=per_page,
-        approved_only=approved_only,
-        filters=filters
+        approved_only=approved_only
     )
     
     total_pages = math.ceil(total / per_page)
