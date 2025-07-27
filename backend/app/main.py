@@ -67,6 +67,19 @@ def get_client_ip(request: Request) -> str:
 
 # Public API Endpoints
 
+@app.get("/health")
+async def health_check():
+    """Health Check für Container"""
+    try:
+        # Datenbankverbindung testen
+        db = database.SessionLocal()
+        db.execute("SELECT 1")
+        db.close()
+        
+        return {"status": "healthy", "service": "guestbook-api", "database": "connected"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Health check failed: {str(e)}")
+
 @app.get("/", response_class=HTMLResponse)
 async def root():
     """Basis-Endpunkt"""
@@ -82,6 +95,7 @@ async def root():
                 <li><a href="/docs">API Dokumentation</a></li>
                 <li><a href="/api/reviews">Bewertungen anzeigen</a></li>
                 <li><a href="/api/stats">Statistiken</a></li>
+                <li><a href="/health">Health Check</a></li>
             </ul>
         </body>
     </html>

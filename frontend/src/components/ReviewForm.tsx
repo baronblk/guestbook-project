@@ -67,9 +67,13 @@ const ReviewForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Name */}
-      <div>
+    <div>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+        Jetzt Feedback geben
+      </h1>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Name */}
+        <div>
         <label htmlFor="name" className="form-label">
           Name *
         </label>
@@ -242,6 +246,7 @@ const ReviewForm: React.FC = () => {
         </button>
       </div>
     </form>
+    </div>
   );
 };
 

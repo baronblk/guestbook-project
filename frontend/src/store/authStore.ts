@@ -52,21 +52,47 @@ export const useAuthStore = create<AuthStore>()(
         });
       },
 
-      checkAuth: () => {
+      checkAuth: async () => {
         const token = localStorage.getItem('admin_token');
         if (token) {
-          set({ 
-            token,
-            // In real app, validate token and fetch user data
-            user: {
-              id: 1,
-              username: 'admin',
-              email: 'admin@guestbook.local',
-              is_active: true,
-              is_superuser: true,
-              created_at: new Date().toISOString()
+          try {
+            // Validierung durch einen API-Call zum Backend
+            await adminApi.getReviews({ page: 1, per_page: 1 });
+            set({ 
+              token,
+              user: {
+                id: 1,
+                username: 'admin',
+                email: 'admin@guestbook.local',
+                is_active: true,
+                is_superuser: true,
+                created_at: new Date().toISOString()
+              }
+            });
+          } catch (error: any) {
+            // Token ist ungültig oder Session abgelaufen
+            if (error.response?.status === 401 || error.response?.status === 403) {
+              localStorage.removeItem('admin_token');
+              set({ token: null, user: null });
             }
-          });
+          }
+        }
+      },
+
+      // Neue Funktion für kontinuierliche Session-Überwachung
+      validateSession: async () => {
+        const token = get().token;
+        if (!token) return false;
+        
+        try {
+          await adminApi.getReviews({ page: 1, per_page: 1 });
+          return true;
+        } catch (error: any) {
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            get().logout();
+            return false;
+          }
+          return true; // Anderer Fehler, Session könnte noch gültig sein
         }
       },
 

@@ -3,11 +3,14 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
 import { useReviewStore } from '../store/reviewStore';
+import { useSessionMonitor } from '../hooks/useSessionMonitor';
 import { ImportExportData } from '../types';
 import { adminApi } from '../api';
 import RatingStars from './RatingStars';
 import Pagination from './Pagination';
 import ImageModal from './ImageModal';
+import SessionTimer from './SessionTimer';
+import SessionExtensionButton from './SessionExtensionButton';
 
 interface CreateAdminForm {
   username: string;
@@ -25,6 +28,9 @@ const AdminDashboard: React.FC = () => {
     deleteReview, 
     toggleReviewVisibility 
   } = useReviewStore();
+  
+  // Session-Monitoring aktivieren (alle 3 Minuten)
+  useSessionMonitor(3);
   
   const [activeTab, setActiveTab] = useState<'reviews' | 'admin' | 'export'>('reviews');
   const [reviewFilter, setReviewFilter] = useState<'all' | 'approved' | 'hidden'>('all');
@@ -69,8 +75,15 @@ const AdminDashboard: React.FC = () => {
       
       setTotalPages(Math.ceil(response.total / 10));
       setTotalReviews(response.total);
-    } catch (error) {
-      toast.error('Fehler beim Laden der Bewertungen');
+    } catch (error: any) {
+      // Bessere Fehlerbehandlung für verschiedene HTTP-Status-Codes
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        toast.error('Session abgelaufen. Sie werden zur Anmeldung weitergeleitet...');
+        // Der Interceptor wird automatisch weiterleiten
+      } else {
+        toast.error('Fehler beim Laden der Bewertungen');
+        console.error('Admin reviews fetch error:', error);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -386,6 +399,13 @@ const AdminDashboard: React.FC = () => {
               <span className="text-sm text-gray-600">
                 Willkommen, {user?.username}
               </span>
+              
+              {/* Session Timer */}
+              <SessionTimer className="hidden sm:flex" />
+              
+              {/* Session Extension Button - zeigt sich nur wenn Session bald abläuft */}
+              <SessionExtensionButton className="hidden sm:flex" />
+              
               <button
                 onClick={logout}
                 className="bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -393,6 +413,16 @@ const AdminDashboard: React.FC = () => {
                 Abmelden
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Session Info */}
+      <div className="sm:hidden bg-gray-50 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <SessionTimer showIcon={false} />
+            <SessionExtensionButton />
           </div>
         </div>
       </div>

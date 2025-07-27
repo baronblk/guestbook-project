@@ -15,15 +15,10 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
     loading,
     error,
     pagination,
-    filters,
     fetchReviews,
     setPage,
     clearError,
-    updateFilters,
   } = useReviewStore();
-
-  // Local state for filter controls - Simplified
-  const [selectedRating, setSelectedRating] = useState<number | undefined>(filters.rating);
   
   // Modal state for image viewing
   const [modalImage, setModalImage] = useState<{ src: string; alt: string } | null>(null);
@@ -31,26 +26,6 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
   useEffect(() => {
     fetchReviews();
   }, [fetchReviews]);
-
-  // Handler für Filter-Updates - Simplified
-  const handleFilterUpdate = () => {
-    const newFilters = {
-      rating: selectedRating || undefined,
-      sort_by: 'created_at' as const,
-      sort_order: 'desc' as const,
-    };
-    updateFilters(newFilters);
-  };
-
-  // Filter zurücksetzen - Simplified
-  const resetFilters = () => {
-    setSelectedRating(undefined);
-    updateFilters({
-      rating: undefined,
-      sort_by: 'created_at' as const,
-      sort_order: 'desc' as const,
-    });
-  };
 
   if (loading && reviews.length === 0) {
     return (
@@ -122,101 +97,45 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Ultra-Minimal Filter Controls */}
-      {!embedded && (
-        <div className="flex flex-wrap items-center gap-6 py-4 border-b border-gray-200 mb-6">
-          
-          {/* Star Rating Filter - Clickable Stars */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Filter ab:</span>
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  onClick={() => {
-                    const newRating = selectedRating === star ? undefined : star;
-                    setSelectedRating(newRating);
-                    const newFilters = {
-                      rating: newRating || undefined,
-                      sort_by: 'created_at' as const,
-                      sort_order: 'desc' as const,
-                    };
-                    updateFilters(newFilters);
-                  }}
-                  className={`text-xl transition-all duration-150 hover:scale-110 ${
-                    selectedRating && star <= selectedRating
-                      ? 'text-yellow-500'
-                      : 'text-gray-300 hover:text-yellow-400'
-                  }`}
-                  title={`${selectedRating === star ? 'Filter entfernen' : `Ab ${star} ${star === 1 ? 'Stern' : 'Sterne'} filtern`}`}
-                >
-                  ⭐
-                </button>
-              ))}
-              {selectedRating && (
-                <button
-                  onClick={() => {
-                    setSelectedRating(undefined);
-                    const newFilters = {
-                      rating: undefined,
-                      sort_by: 'created_at' as const,
-                      sort_order: 'desc' as const,
-                    };
-                    updateFilters(newFilters);
-                  }}
-                  className="ml-2 text-xs text-gray-500 hover:text-gray-700 underline"
-                >
-                  alle
-                </button>
-              )}
-            </div>
-          </div>
+    <div className="space-y-8">
 
-          {/* Results Counter */}
-          <div className="ml-auto text-sm text-gray-500">
-            <span className="font-medium text-gray-900">{reviews.length}</span> von <span className="font-medium">{pagination.total}</span> Bewertungen
-          </div>
-        </div>
-      )}
-
-      {/* Reviews */}
+      {/* Reviews Container */}
       <div className="space-y-6">
         {reviews.map((review, index) => (
           <div
             key={review.id}
-            className="group relative bg-white rounded-2xl border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-gray-200 shadow-md hover:border-gray-300"
+            className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
           >
-            <div className="p-6">
+            <div className="p-6 sm:p-8">
               {/* Header mit Avatar */}
-              <div className="flex items-start space-x-4 mb-4">
+              <div className="flex items-start space-x-4 mb-6">
                 <div className="flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg bg-gradient-to-br from-blue-500 to-purple-600">
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
                     {review.name.charAt(0).toUpperCase()}
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 truncate">
+                      <h3 className="text-xl font-bold text-gray-900 truncate">
                         {review.name}
                       </h3>
                       {review.title && (
-                        <h4 className="text-sm text-gray-600 mt-0.5 font-medium">
+                        <h4 className="text-sm text-gray-600 mt-1 font-medium">
                           {review.title}
                         </h4>
                       )}
                     </div>
                     <div className="flex-shrink-0 ml-4">
-                      <RatingStars rating={review.rating} size="sm" />
+                      <RatingStars rating={review.rating} size="lg" />
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Content */}
-              <div className="mb-4">
-                <div className="text-gray-700 leading-relaxed">
+              <div className="mb-6">
+                <div className="text-gray-700 leading-relaxed text-base">
                   <p className="whitespace-pre-wrap">
                     {embedded 
                       ? apiUtils.truncateText(review.content, 150)
@@ -286,11 +205,13 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
 
       {/* Pagination (nur wenn nicht embedded) */}
       {!embedded && pagination.total_pages > 1 && (
-        <Pagination
-          currentPage={pagination.page}
-          totalPages={pagination.total_pages}
-          onPageChange={setPage}
-        />
+        <div className="flex justify-center pt-8">
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={pagination.total_pages}
+            onPageChange={setPage}
+          />
+        </div>
       )}
 
       {/* Loading overlay für zusätzliche Seiten */}

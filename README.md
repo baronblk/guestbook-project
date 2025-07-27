@@ -1,6 +1,14 @@
-# 🏆 Vollständiges Gästebuch-System
+# 📝 Guestbook - Full Stack Web Application
 
-Ein modernes, selbst gehostetes Gästebuch-System mit **FastAPI Backend**, **React Frontend** und **MariaDB** Datenbank.
+Ein modernes, vollständig containerisiertes Gästebuch-System mit Session-Management und Admin-Panel.
+
+## 🏗️ Architektur
+
+- **Frontend**: React 18 + TypeScript + Zustand (State Management)
+- **Backend**: FastAPI + SQLAlchemy + JWT Authentication
+- **Database**: MariaDB 10.11
+- **Containerization**: Docker + Docker Compose
+- **Deployment**: GitHub Container Registry (GHCR) + Portainer
 
 ## ✨ Features
 

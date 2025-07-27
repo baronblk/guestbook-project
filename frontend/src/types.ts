@@ -160,7 +160,8 @@ export interface AuthStore {
   // Actions
   login: (credentials: LoginForm) => Promise<boolean>;
   logout: () => void;
-  checkAuth: () => void;
+  checkAuth: () => Promise<void>;
+  validateSession: () => Promise<boolean>;
   clearError: () => void;
 }
 

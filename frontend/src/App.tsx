@@ -56,30 +56,24 @@ const App: React.FC = () => {
             path="/"
             element={
               <Layout>
-                <div className="max-w-4xl mx-auto py-8 px-4">
-                  <header className="text-center mb-12">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                      Gästebuch
-                    </h1>
-                    <p className="text-lg text-gray-600">
-                      Teilen Sie Ihre Erfahrungen mit uns
-                    </p>
-                  </header>
-
-                  <div className="grid lg:grid-cols-2 gap-8">
-                    <div>
-                      <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                        Neue Bewertung
+                {/* Zentraler Container mit max-width 800px */}
+                <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+                  {/* Formular zur Bewertungsabgabe - zentriert oben */}
+                  <div className="mb-12">
+                    <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                        Neue Bewertung abgeben
                       </h2>
                       <ReviewForm />
                     </div>
+                  </div>
 
-                    <div>
-                      <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                        Bewertungen
-                      </h2>
-                      <ReviewList />
-                    </div>
+                  {/* Bewertungen - direkt darunter in derselben Breite */}
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+                      Gästebuch-Einträge
+                    </h2>
+                    <ReviewList />
                   </div>
                 </div>
               </Layout>
