@@ -5,6 +5,7 @@ from enum import IntEnum
 
 class RatingEnum(IntEnum):
     """Bewertungs-Sterne (1-5)"""
+    image_path: Optional[str] = None
     ONE = 1
     TWO = 2
     THREE = 3
