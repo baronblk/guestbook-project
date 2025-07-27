@@ -29,6 +29,7 @@ const AdminDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalReviews, setTotalReviews] = useState(0);
   
   const { 
     register: registerAdmin, 
@@ -46,6 +47,7 @@ const AdminDashboard: React.FC = () => {
         limit: 10
       });
       setTotalPages(Math.ceil(response.total / 10));
+      setTotalReviews(response.total);
     } catch (error) {
       toast.error('Fehler beim Laden der Bewertungen');
     } finally {
@@ -192,7 +194,9 @@ const AdminDashboard: React.FC = () => {
       {/* Reviews List */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium mb-4">Bewertungen ({reviews.length})</h3>
+          <h3 className="text-lg font-medium mb-4">
+            Bewertungen ({reviews.length} von {totalReviews})
+          </h3>
           
           {isLoading ? (
             <div className="text-center py-8">
