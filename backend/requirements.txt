@@ -1,0 +1,25 @@
+# FastAPI & Server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Database
+sqlalchemy==2.0.23
+pymysql==1.1.0
+cryptography==41.0.7
+
+# Authentication & Security
+pyjwt==2.8.0
+python-multipart==0.0.6
+passlib[bcrypt]==1.7.4
+
+# Image Processing
+pillow==10.1.0
+
+# Async File Operations
+aiofiles==23.2.1
+
+# Validation & Parsing
+pydantic[email]==2.5.0
+
+# Development & Utilities
+python-dotenv==1.0.0

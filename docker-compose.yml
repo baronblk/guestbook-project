@@ -1,0 +1,61 @@
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: Kx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB
+      MYSQL_DATABASE: guestbook
+      MYSQL_USER: guestuser
+      MYSQL_PASSWORD: whHBJveMvwjs5a6p
+    volumes:
+      - guestbook_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-pKx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - guestbook-network
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: guestuser
+      DB_PASSWORD: whHBJveMvwjs5a6p
+      DB_NAME: guestbook
+      JWT_SECRET_KEY: DeRBC3FDeY8d9nw9WMBwNJ0LpVyvB5ty607r2PHdmQBpqn
+      ADMIN_USERNAME: admin
+      ADMIN_EMAIL: support@dcng.de
+      ADMIN_PASSWORD: admin123
+    volumes:
+      - ./backend/uploads:/app/uploads
+    networks:
+      - guestbook-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      REACT_APP_API_URL: http://localhost:8000
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    networks:
+      - guestbook-network
+
+volumes:
+  guestbook_db:
+
+networks:
+  guestbook-network:
+    driver: bridge
