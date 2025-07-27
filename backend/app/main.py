@@ -137,6 +137,7 @@ async def get_reviews(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=50),
     rating: Optional[int] = Query(None, ge=1, le=5),
+    min_rating: Optional[int] = Query(None, ge=1, le=5),
     featured_only: Optional[bool] = Query(None),
     search: Optional[str] = Query(None),
     sort_by: str = Query("created_at", pattern="^(created_at|rating|name)$"),
@@ -146,9 +147,12 @@ async def get_reviews(
     """Bewertungen abrufen (öffentlich)"""
     skip = (page - 1) * per_page
     
+    # min_rating und rating sind dasselbe - min_rating hat Vorrang
+    effective_rating = min_rating or rating
+    
     # Filter erstellen
     filters = schemas.ReviewFilters(
-        rating=rating,
+        rating=effective_rating,
         is_featured=featured_only,
         search=search
     )

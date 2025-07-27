@@ -63,7 +63,7 @@ class ReviewCRUD:
         # Erweiterte Filter
         if filters:
             if filters.rating:
-                query = query.filter(models.Review.rating == filters.rating)
+                query = query.filter(models.Review.rating >= filters.rating)
             if filters.is_featured is not None:
                 query = query.filter(models.Review.is_featured == filters.is_featured)
             if filters.search:
@@ -80,15 +80,12 @@ class ReviewCRUD:
             if filters.date_to:
                 query = query.filter(models.Review.created_at <= filters.date_to)
         
-        # Sortierung
+        # Sortierung - Neueste zuerst, Featured Reviews werden hervorgehoben aber nicht priorisiert
         sort_column = getattr(models.Review, sort_by, models.Review.created_at)
         if sort_order == "desc":
             query = query.order_by(desc(sort_column))
         else:
             query = query.order_by(asc(sort_column))
-        
-        # Featured Reviews zuerst
-        query = query.order_by(desc(models.Review.is_featured), desc(models.Review.created_at))
         
         total = query.count()
         reviews = query.offset(skip).limit(limit).all()
