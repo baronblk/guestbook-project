@@ -7,6 +7,7 @@ import { ImportExportData } from '../types';
 import { adminApi } from '../api';
 import RatingStars from './RatingStars';
 import Pagination from './Pagination';
+import ImageModal from './ImageModal';
 
 interface CreateAdminForm {
   username: string;
@@ -30,6 +31,7 @@ const AdminDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalReviews, setTotalReviews] = useState(0);
+  const [modalImage, setModalImage] = useState<string | null>(null);
   
   const { 
     register: registerAdmin, 
@@ -259,8 +261,7 @@ const AdminDashboard: React.FC = () => {
                         alt="Review-Bild"
                         className="max-w-xs rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
                         onClick={() => {
-                          // Optional: Modal öffnen
-                          window.open(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${review.image_path}`, '_blank');
+                          setModalImage(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${review.image_path}`);
                         }}
                       />
                       <p className="text-xs text-gray-500 mt-1">Klicken zum Vergrößern</p>
@@ -455,6 +456,16 @@ const AdminDashboard: React.FC = () => {
         {activeTab === 'admin' && renderAdminTab()}
         {activeTab === 'export' && renderExportTab()}
       </div>
+
+      {/* Image Modal */}
+      {modalImage && (
+        <ImageModal
+          imageSrc={modalImage}
+          imageAlt="Review-Bild vergrößert"
+          isOpen={!!modalImage}
+          onClose={() => setModalImage(null)}
+        />
+      )}
     </div>
   );
 };
