@@ -178,6 +178,28 @@ export const adminApi = {
     });
     return response.data;
   },
+  // Neue Methode: Ausstehende Bewertungen abrufen
+  async getPendingReviews(params: { page?: number; per_page?: number } = {}): Promise<ReviewListResponse> {
+    // Filter: Nur nicht genehmigte Bewertungen
+    const response: AxiosResponse<ReviewListResponse> = await api.get('/api/admin/reviews', {
+      params: { ...params, approved_only: false }
+    });
+    // Optional: Filtere die Reviews nach is_approved === false
+    response.data.reviews = response.data.reviews.filter((r) => r.is_approved === false);
+    return response.data;
+  },
+  // Neue Methode: Bewertung genehmigen
+  async approveReview(id: number): Promise<AdminReview> {
+    // PATCH oder PUT, je nach Backend-API
+    const response: AxiosResponse<AdminReview> = await api.patch(`/api/admin/reviews/${id}/approve`);
+    return response.data;
+  },
+  // Neue Methode: Bewertung ablehnen
+  async rejectReview(id: number): Promise<AdminReview> {
+    // PATCH oder PUT, je nach Backend-API
+    const response: AxiosResponse<AdminReview> = await api.patch(`/api/admin/reviews/${id}/reject`);
+    return response.data;
+  },
 };
 
 // Utility functions
