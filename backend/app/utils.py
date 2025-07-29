@@ -158,34 +158,57 @@ class ImportExportUtils:
         return reviews
     
     @staticmethod
-    def export_reviews_json(reviews: list) -> dict:
-        """Reviews als JSON exportieren"""
+    def export_reviews_json(reviews: list, include_comments: bool = True) -> dict:
+        """Reviews als JSON exportieren mit optionalen Kommentaren"""
         export_data = {
             'exported_at': datetime.utcnow().isoformat(),
             'total_reviews': len(reviews),
-            'reviews': [
-                {
-                    'id': review.id,
-                    'name': review.name,
-                    'email': review.email,
-                    'rating': review.rating,
-                    'title': review.title,
-                    'content': review.content,
-                    'created_at': review.created_at.isoformat() if review.created_at else None,
-                    'updated_at': review.updated_at.isoformat() if review.updated_at else None,
-                    'is_approved': review.is_approved,
-                    'is_featured': review.is_featured,
-                    'import_source': getattr(review, 'import_source', None),
-                    'external_id': getattr(review, 'external_id', None)
-                }
-                for review in reviews
-            ]
+            'include_comments': include_comments,
+            'reviews': []
         }
+        
+        for review in reviews:
+            review_data = {
+                'id': review.id,
+                'name': review.name,
+                'email': review.email,
+                'rating': review.rating,
+                'title': review.title,
+                'content': review.content,
+                'created_at': review.created_at.isoformat() if review.created_at else None,
+                'updated_at': review.updated_at.isoformat() if review.updated_at else None,
+                'is_approved': review.is_approved,
+                'is_featured': review.is_featured,
+                'import_source': getattr(review, 'import_source', None),
+                'external_id': getattr(review, 'external_id', None)
+            }
+            
+            # Kommentare hinzufügen falls gewünscht
+            if include_comments and hasattr(review, 'comments') and review.comments:
+                review_data['comments'] = [
+                    {
+                        'id': comment.id,
+                        'name': comment.name,
+                        'email': comment.email,
+                        'content': comment.content,
+                        'created_at': comment.created_at.isoformat() if comment.created_at else None,
+                        'updated_at': comment.updated_at.isoformat() if comment.updated_at else None,
+                        'is_approved': comment.is_approved,
+                        'admin_notes': comment.admin_notes,
+                        'ip_address': comment.ip_address
+                    }
+                    for comment in review.comments
+                ]
+            else:
+                review_data['comments'] = []
+            
+            export_data['reviews'].append(review_data)
+        
         return export_data
     
     @staticmethod
     def convert_export_to_import_format(export_data: dict, import_source: str = "export_reimport") -> dict:
-        """Konvertiert Export-Format zu Import-Format"""
+        """Konvertiert Export-Format zu Import-Format mit Kommentar-Support"""
         if 'reviews' not in export_data:
             raise ValueError("Invalid export format: missing 'reviews' key")
         
@@ -199,13 +222,30 @@ class ImportExportUtils:
                 'email': review.get('email'),
                 'created_at': review.get('created_at'),
                 'import_source': import_source,
-                'external_id': review.get('external_id')
+                'external_id': review.get('external_id'),
+                'comments': []
             }
+            
+            # Kommentare konvertieren falls vorhanden
+            if 'comments' in review and review['comments']:
+                import_review['comments'] = [
+                    {
+                        'name': comment['name'],
+                        'email': comment.get('email'),
+                        'content': comment['content'],
+                        'created_at': comment.get('created_at'),
+                        'is_approved': comment.get('is_approved', False),
+                        'admin_notes': comment.get('admin_notes')
+                    }
+                    for comment in review['comments']
+                ]
+            
             import_reviews.append(import_review)
         
         return {
             'source': import_source,
-            'reviews': import_reviews
+            'reviews': import_reviews,
+            'include_comments': export_data.get('include_comments', False)
         }
 
 from io import BytesIO

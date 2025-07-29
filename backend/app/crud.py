@@ -143,8 +143,8 @@ class ReviewCRUD:
         }
     
     @staticmethod
-    def bulk_import_reviews(db: Session, reviews: List[schemas.ImportReview], source: str) -> List[models.Review]:
-        """Bulk-Import von Bewertungen"""
+    def bulk_import_reviews(db: Session, reviews: List[schemas.ImportReview], source: str, auto_approve: bool = True, include_comments: bool = False) -> List[models.Review]:
+        """Bulk-Import von Bewertungen mit optionalen Kommentaren"""
         created_reviews = []
         
         for review_data in reviews:
@@ -169,6 +169,22 @@ class ReviewCRUD:
                 is_approved=True
             )
             db.add(db_review)
+            db.flush()  # Flush um ID zu bekommen, aber noch nicht committen
+            
+            # Kommentare importieren falls vorhanden und gewünscht
+            if include_comments and review_data.comments:
+                for comment_data in review_data.comments:
+                    db_comment = models.Comment(
+                        review_id=db_review.id,
+                        name=comment_data.name,
+                        email=comment_data.email,
+                        content=comment_data.content,
+                        created_at=comment_data.created_at or datetime.utcnow(),
+                        is_approved=comment_data.is_approved,
+                        admin_notes=comment_data.admin_notes
+                    )
+                    db.add(db_comment)
+            
             created_reviews.append(db_review)
         
         db.commit()

@@ -96,6 +96,15 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 # Import Schemas
+class ImportComment(BaseModel):
+    """Schema für Import von Kommentaren"""
+    name: str
+    email: Optional[str] = None
+    content: str
+    created_at: Optional[datetime] = None
+    is_approved: bool = False
+    admin_notes: Optional[str] = None
+
 class ImportReview(BaseModel):
     """Schema für Import von externen Bewertungen"""
     name: str
@@ -106,11 +115,13 @@ class ImportReview(BaseModel):
     created_at: Optional[datetime] = None
     import_source: str = "manual"
     external_id: Optional[str] = None
+    comments: List[ImportComment] = []
 
 class ImportRequest(BaseModel):
     """Schema für Bulk-Import"""
     reviews: List[ImportReview]
     source: str = "manual"
+    include_comments: bool = False
 
 # Filter/Sort Schemas
 class ReviewFilters(BaseModel):

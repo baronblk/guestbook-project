@@ -349,14 +349,24 @@ async def admin_import_reviews(
     current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
     db: Session = Depends(database.get_db)
 ):
-    """Bewertungen importieren (Admin)"""
+    """Bewertungen importieren (Admin) mit optionalen Kommentaren"""
     created_reviews = crud.review_crud.bulk_import_reviews(
-        db, import_request.reviews, import_request.source
+        db, 
+        import_request.reviews, 
+        import_request.source, 
+        auto_approve=True, 
+        include_comments=import_request.include_comments
     )
     
+    comments_info = ""
+    if import_request.include_comments:
+        total_comments = sum(len(review.comments) for review in import_request.reviews)
+        comments_info = f" mit {total_comments} Kommentaren"
+    
     return {
-        "message": f"{len(created_reviews)} Bewertungen erfolgreich importiert",
-        "imported_count": len(created_reviews)
+        "message": f"{len(created_reviews)} Bewertungen{comments_info} erfolgreich importiert",
+        "imported_count": len(created_reviews),
+        "include_comments": import_request.include_comments
     }
 
 @app.post("/api/admin/reviews/import-export")
@@ -366,7 +376,7 @@ async def admin_import_from_export(
     current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
     db: Session = Depends(database.get_db)
 ):
-    """Export-Datei direkt importieren (Admin)"""
+    """Export-Datei direkt importieren (Admin) mit Kommentar-Support"""
     try:
         # Export-Format zu Import-Format konvertieren
         import_data = utils.ImportExportUtils.convert_export_to_import_format(
@@ -377,13 +387,21 @@ async def admin_import_from_export(
         created_reviews = crud.review_crud.bulk_import_reviews(
             db, 
             [schemas.ImportReview(**review) for review in import_data['reviews']], 
-            import_data['source']
+            import_data['source'],
+            auto_approve=True,
+            include_comments=import_data.get('include_comments', False)
         )
         
+        comments_info = ""
+        if import_data.get('include_comments', False):
+            total_comments = sum(len(review.get('comments', [])) for review in import_data['reviews'])
+            comments_info = f" mit {total_comments} Kommentaren"
+        
         return {
-            "message": f"{len(created_reviews)} Bewertungen aus Export-Datei erfolgreich importiert",
+            "message": f"{len(created_reviews)} Bewertungen aus Export-Datei{comments_info} erfolgreich importiert",
             "imported_count": len(created_reviews),
-            "source": import_data['source']
+            "source": import_data['source'],
+            "include_comments": import_data.get('include_comments', False)
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -409,12 +427,20 @@ async def admin_import_export_data(
             created_reviews = crud.review_crud.bulk_import_reviews(
                 db, 
                 [schemas.ImportReview(**review) for review in converted_data['reviews']], 
-                converted_data['source']
+                converted_data['source'],
+                auto_approve=True,
+                include_comments=converted_data.get('include_comments', False)
             )
             
+            comments_info = ""
+            if converted_data.get('include_comments', False):
+                total_comments = sum(len(review.get('comments', [])) for review in converted_data['reviews'])
+                comments_info = f" mit {total_comments} Kommentaren"
+            
             return {
-                "message": f"{len(created_reviews)} Bewertungen erfolgreich importiert",
-                "imported_count": len(created_reviews)
+                "message": f"{len(created_reviews)} Bewertungen{comments_info} erfolgreich importiert",
+                "imported_count": len(created_reviews),
+                "include_comments": converted_data.get('include_comments', False)
             }
         else:
             # Legacy Format handling
@@ -435,16 +461,24 @@ async def admin_get_stats(
 
 @app.get("/api/admin/export")
 async def admin_export_reviews(
+    include_comments: bool = Query(True, description="Include comments in export"),
     current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
     db: Session = Depends(database.get_db)
 ):
-    """Bewertungen exportieren (Admin)"""
-    reviews, _ = crud.review_crud.get_reviews(db, approved_only=None, limit=10000)
-    export_data = utils.ImportExportUtils.export_reviews_json(reviews)
+    """Bewertungen exportieren (Admin) mit optionalen Kommentaren"""
+    # Reviews mit Kommentaren laden falls gewünscht
+    if include_comments:
+        from sqlalchemy.orm import joinedload
+        reviews = db.query(models.Review).options(joinedload(models.Review.comments)).limit(10000).all()
+    else:
+        reviews, _ = crud.review_crud.get_reviews(db, approved_only=None, limit=10000)
     
+    export_data = utils.ImportExportUtils.export_reviews_json(reviews, include_comments)
+    
+    filename = f"reviews_export{'_with_comments' if include_comments else ''}.json"
     return JSONResponse(
         content=export_data,
-        headers={"Content-Disposition": "attachment; filename=reviews_export.json"}
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
 # Error Handlers
