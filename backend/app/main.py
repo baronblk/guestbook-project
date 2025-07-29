@@ -290,6 +290,33 @@ async def admin_login(
     
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.get("/api/admin/reviews/count/all")
+async def admin_get_all_reviews_count(
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Anzahl aller Bewertungen"""
+    stats = crud.review_crud.get_review_stats(db)
+    return {"count": stats["total_reviews"]}
+
+@app.get("/api/admin/reviews/count/pending")
+async def admin_get_pending_reviews_count(
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Anzahl ausstehender Bewertungen"""
+    stats = crud.review_crud.get_review_stats(db)
+    return {"count": stats["pending_reviews"]}
+
+@app.get("/api/admin/reviews/count/approved")
+async def admin_get_approved_reviews_count(
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Anzahl genehmigter Bewertungen"""
+    stats = crud.review_crud.get_review_stats(db)
+    return {"count": stats["approved_reviews"]}
+
 @app.get("/api/admin/reviews", response_model=schemas.ReviewListResponse)
 async def admin_get_reviews(
     page: int = Query(1, ge=1),
@@ -466,6 +493,30 @@ async def admin_get_comments_stats(
 ):
     """Kommentar-Statistiken für Dashboard (Admin)"""
     return crud.comment_crud.get_comment_stats(db)
+
+@app.get("/api/admin/comments/count/all")
+async def admin_get_all_comments_count(
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Anzahl aller Kommentare"""
+    return {"count": crud.comment_crud.get_comment_stats(db)["total_comments"]}
+
+@app.get("/api/admin/comments/count/pending")
+async def admin_get_pending_comments_count(
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Anzahl ausstehender Kommentare"""
+    return {"count": crud.comment_crud.get_comment_stats(db)["pending_comments"]}
+
+@app.get("/api/admin/comments/count/approved")
+async def admin_get_approved_comments_count(
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Anzahl genehmigter Kommentare"""
+    return {"count": crud.comment_crud.get_comment_stats(db)["approved_comments"]}
 
 @app.get("/api/admin/export")
 async def admin_export_reviews(

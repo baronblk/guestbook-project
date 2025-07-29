@@ -10,13 +10,20 @@ const AdminCommentsPanel: React.FC = () => {
   const [pendingComments, setPendingComments] = useState<CommentResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
+  // Tab-Auswahl persistent speichern
+  const getInitialTab = () => {
+    const saved = localStorage.getItem('adminCommentsTab');
+    return saved === 'all' ? 'all' : 'pending';
+  };
+  const [activeTab, setActiveTab] = useState<'pending' | 'all'>(getInitialTab());
   const [pagination, setPagination] = useState({
     page: 1,
     per_page: 10,
     total: 0,
     total_pages: 0
   });
+  const [allCount, setAllCount] = useState<number>(0);
+  const [pendingCount, setPendingCount] = useState<number>(0);
 
   const fetchComments = async (tab: 'pending' | 'all' = activeTab, page = 1) => {
     if (!token) return;
@@ -40,10 +47,31 @@ const AdminCommentsPanel: React.FC = () => {
         total: response.total,
         total_pages: response.total_pages
       });
+      // Tab-Counts synchron aktualisieren
+      await fetchTabCounts();
     } catch (err: any) {
       setError(err.message || 'Fehler beim Laden der Kommentare');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Neue Funktion: Tab-Counts aus Endpunkten holen
+  const fetchTabCounts = async () => {
+    if (!token) return;
+    try {
+      const [allRes, pendingRes] = await Promise.all([
+        fetch('/api/admin/comments/count/all', {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(r => r.json()),
+        fetch('/api/admin/comments/count/pending', {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(r => r.json())
+      ]);
+      setAllCount(allRes.count ?? 0);
+      setPendingCount(pendingRes.count ?? 0);
+    } catch (err) {
+      // Fehler ignorieren, falls Backend nicht erreichbar
     }
   };
 
@@ -58,6 +86,7 @@ const AdminCommentsPanel: React.FC = () => {
         setPendingComments(prev => prev.filter(c => c.id !== commentId));
       }
       await fetchComments('all', 1); // Refresh all comments
+      await fetchTabCounts();
     } catch (err: any) {
       setError(err.message || 'Fehler beim Genehmigen des Kommentars');
     }
@@ -79,6 +108,7 @@ const AdminCommentsPanel: React.FC = () => {
       } else {
         setComments(prev => prev.filter(c => c.id !== commentId));
       }
+      await fetchTabCounts();
     } catch (err: any) {
       setError(err.message || 'Fehler beim Löschen des Kommentars');
     }
@@ -86,12 +116,22 @@ const AdminCommentsPanel: React.FC = () => {
 
   const handleTabChange = (tab: 'pending' | 'all') => {
     setActiveTab(tab);
+    localStorage.setItem('adminCommentsTab', tab);
     setPagination(prev => ({ ...prev, page: 1 }));
+    // Tab-Counts und Kommentare synchron laden
+    fetchComments(tab, 1);
   };
 
   useEffect(() => {
+    // Nur laden, wenn Tab sich ändert (Tab-Wechsel oder Token-Wechsel)
     fetchComments(activeTab, 1);
   }, [activeTab, token]);
+
+  // Tab-Counts direkt beim ersten Rendern laden
+  useEffect(() => {
+    // Tab-Counts und Kommentare initial laden
+    fetchComments(activeTab, 1);
+  }, [token]);
 
   const currentComments = activeTab === 'pending' ? pendingComments : comments;
 
@@ -116,7 +156,7 @@ const AdminCommentsPanel: React.FC = () => {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Ausstehend ({pendingComments.length})
+            Ausstehend ({pendingCount})
           </button>
           <button
             onClick={() => handleTabChange('all')}
@@ -126,7 +166,7 @@ const AdminCommentsPanel: React.FC = () => {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Alle Kommentare ({pagination.total})
+            Alle Kommentare ({allCount})
           </button>
         </nav>
       </div>
