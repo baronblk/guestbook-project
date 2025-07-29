@@ -1,0 +1,45 @@
+{
+  "name": "guestbook-project",
+  "version": "1.2.0",
+  "description": "Professional containerized guestbook system for vacation rental properties",
+  "license": "MIT",
+  "author": "baronblk",
+  "homepage": "https://github.com/baronblk/guestbook-project",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/baronblk/guestbook-project.git"
+  },
+  "bugs": {
+    "url": "https://github.com/baronblk/guestbook-project/issues"
+  },
+  "keywords": [
+    "guestbook",
+    "vacation-rental",
+    "reviews",
+    "docker",
+    "fastapi",
+    "react",
+    "typescript",
+    "mariadb",
+    "containerized"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "dev": "docker-compose up -d",
+    "prod": "docker-compose -f docker-compose.combined.yml up -d",
+    "build": "docker build -f Dockerfile.combined -t guestbook:latest .",
+    "deploy": "./scripts/deploy-production.sh",
+    "clean": "./scripts/cleanup.sh",
+    "logs": "docker-compose logs -f",
+    "stop": "docker-compose down",
+    "test": "cd frontend && npm test && cd ../backend && python -m pytest"
+  },
+  "workspaces": [
+    "frontend"
+  ],
+  "private": false,
+  "type": "module"
+}

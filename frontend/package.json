@@ -1,7 +1,11 @@
 {
   "name": "guestbook-frontend",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "private": true,
+  "license": "MIT",
+  "author": "baronblk",
+  "description": "Professional guestbook system frontend for vacation rental properties",
+  "keywords": ["guestbook", "react", "typescript", "vacation-rental", "reviews"],
   "dependencies": {
     "@types/node": "^18.15.0",
     "@types/react": "^18.0.0",

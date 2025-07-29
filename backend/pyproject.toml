@@ -1,0 +1,77 @@
+[project]
+name = "guestbook-backend"
+version = "1.2.0"
+description = "Professional guestbook system backend API for vacation rental properties"
+authors = [
+    {name = "baronblk", email = "admin@example.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = ["guestbook", "fastapi", "backend", "vacation-rental", "reviews", "api"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Framework :: FastAPI",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+
+dependencies = [
+    "fastapi>=0.68.0",
+    "uvicorn[standard]>=0.15.0",
+    "sqlalchemy>=1.4.23",
+    "pymysql>=1.0.2",
+    "python-multipart>=0.0.5",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "python-decouple>=3.4",
+    "Pillow>=8.3.2",
+    "alembic>=1.7.1",
+    "pydantic[email]>=1.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.2.5",
+    "pytest-asyncio>=0.15.1",
+    "black>=21.7b0",
+    "flake8>=3.9.2",
+    "mypy>=0.910",
+]
+
+[project.urls]
+Homepage = "https://github.com/baronblk/guestbook-project"
+Documentation = "https://github.com/baronblk/guestbook-project/blob/master/README.md"
+Repository = "https://github.com/baronblk/guestbook-project.git"
+Issues = "https://github.com/baronblk/guestbook-project/issues"
+
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["app"]
+
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
