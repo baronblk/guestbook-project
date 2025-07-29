@@ -1,0 +1,159 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  # Backend Tests
+  backend-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:11
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: guestbook_test
+          MYSQL_USER: testuser
+          MYSQL_PASSWORD: testpass
+        options: >-
+          --health-cmd="mariadb-admin ping -h localhost -u root -ptest" --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov
+
+    - name: Run tests
+      env:
+        DB_HOST: localhost
+        DB_USER: testuser
+        DB_PASSWORD: testpass
+        DB_NAME: guestbook_test
+        JWT_SECRET_KEY: test-secret-key
+      run: |
+        cd backend
+        pytest --cov=app tests/ --cov-report=xml
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./backend/coverage.xml
+
+  # Frontend Tests
+  frontend-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Run tests
+      run: |
+        cd frontend
+        npm test -- --coverage --watchAll=false
+
+    - name: Build
+      run: |
+        cd frontend
+        npm run build
+
+  # Docker Build Test
+  docker-test:
+    runs-on: ubuntu-latest
+    needs: [ backend-test, frontend-test ]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -f Dockerfile.combined -t guestbook:test .
+
+    - name: Test Docker image
+      run: |
+        docker run --rm -d --name guestbook-test -p 8080:80 guestbook:test
+        sleep 30
+        curl -f http://localhost:8080/health || exit 1
+        docker stop guestbook-test
+
+  # Security Scan
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Deploy to Production (nur bei main/master branch)
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [ backend-test, frontend-test, docker-test ]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      run: |
+        docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          -f Dockerfile.combined \
+          -t ghcr.io/${{ github.repository_owner }}/guestbook-project/combined:latest \
+          -t ghcr.io/${{ github.repository_owner }}/guestbook-project/combined:${{ github.sha }} \
+          --push .
+
+    - name: Deploy notification
+      run: |
+        echo "🚀 Deployment completed successfully!"
+        echo "Image: ghcr.io/${{ github.repository_owner }}/guestbook-project/combined:latest"

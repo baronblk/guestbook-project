@@ -1,0 +1,74 @@
+name: Dependency Updates
+
+on:
+  schedule:
+  # Prüfe jeden Montag um 9:00 UTC auf Updates
+  - cron: '0 9 * * 1'
+  workflow_dispatch:
+    # Ermöglicht manuelles Ausführen
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        component: [ backend, frontend ]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python (for backend)
+      if: matrix.component == 'backend'
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Set up Node.js (for frontend)
+      if: matrix.component == 'frontend'
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Update Python dependencies
+      if: matrix.component == 'backend'
+      run: |
+        cd backend
+        pip install --upgrade pip
+        pip install pip-tools
+        pip-compile --upgrade requirements.in
+        pip install -r requirements.txt
+
+    - name: Update Node.js dependencies
+      if: matrix.component == 'frontend'
+      run: |
+        cd frontend
+        npm update
+        npm audit fix
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "chore: Update ${{ matrix.component }} dependencies"
+        title: "📦 Update ${{ matrix.component }} dependencies"
+        body: |
+          ## Dependency Updates - ${{ matrix.component }}
+
+          This PR contains automated dependency updates for the ${{ matrix.component }} component.
+
+          ### Changes
+          - Updated dependencies to latest compatible versions
+          - Fixed potential security vulnerabilities
+
+          ### Testing
+          - [ ] Backend tests pass
+          - [ ] Frontend tests pass
+          - [ ] Docker build succeeds
+
+          ---
+          *This PR was created automatically by the dependency update workflow.*
+        branch: update-deps-${{ matrix.component }}
+        delete-branch: true

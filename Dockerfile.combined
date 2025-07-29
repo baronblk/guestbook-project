@@ -1,0 +1,47 @@
+# Multi-stage Build: Combined Frontend + Backend Container
+FROM node:18-alpine AS frontend-builder
+
+# Frontend Build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci --only=production
+COPY frontend/ ./
+RUN npm run build
+
+# Python Backend Stage
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    nginx \
+    supervisor \
+    && rm -rf /var/lib/apt/lists/*
+
+# Backend Setup
+WORKDIR /app
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend code
+COPY backend/ ./backend/
+COPY wait-for-db.py ./backend/
+
+# Copy built frontend from previous stage
+COPY --from=frontend-builder /app/frontend/build /var/www/html
+
+# Nginx configuration
+COPY nginx.conf /etc/nginx/sites-available/default
+
+# Supervisor configuration
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Create uploads directory
+RUN mkdir -p /app/uploads && chmod 755 /app/uploads
+
+# Expose port 80 (Nginx)
+EXPOSE 80
+
+# Start supervisor (manages nginx + fastapi)
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
