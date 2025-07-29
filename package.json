@@ -1,7 +1,7 @@
 {
   "name": "guestbook-project",
   "version": "1.2.0",
-  "description": "Professional containerized guestbook system for vacation rental properties",
+  "description": "Professional containerized guestbook system for modern applications",
   "license": "MIT",
   "author": "baronblk",
   "homepage": "https://github.com/baronblk/guestbook-project",
@@ -14,8 +14,8 @@
   },
   "keywords": [
     "guestbook",
-    "vacation-rental",
     "reviews",
+    "rating-system",
     "docker",
     "fastapi",
     "react",

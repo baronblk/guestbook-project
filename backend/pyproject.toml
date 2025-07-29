@@ -1,14 +1,14 @@
 [project]
 name = "guestbook-backend"
 version = "1.2.0"
-description = "Professional guestbook system backend API for vacation rental properties"
+description = "Professional guestbook system backend API for modern applications"
 authors = [
     {name = "baronblk", email = "admin@example.com"}
 ]
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.9"
-keywords = ["guestbook", "fastapi", "backend", "vacation-rental", "reviews", "api"]
+keywords = ["guestbook", "fastapi", "backend", "reviews", "rating-system", "api"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",

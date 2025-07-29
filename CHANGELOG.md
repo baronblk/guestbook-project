@@ -36,14 +36,14 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - **Docker Build**: Multi-Platform Support für verschiedene Architekturen
 
 ### 📊 Daten
-- **46 echte Gästebewertungen** erfolgreich importiert
-- **Kommentar-System** produktiv einsatzbereit
-- **Admin-Moderation** vollständig funktional
+- **Sample reviews** successfully imported for testing
+- **Comment-System** productive ready
+- **Admin-Moderation** fully functional
 
 ## [1.1.0] - 2025-07-27
 
 ### ✨ Hinzugefügt
-- **Real Data Import**: 46 echte Gästebewertungen von Coco de Mer
+- **Test Data Import**: Sample reviews for development
 - **Date Correction**: Korrekte Datumsanzeige für alle Reviews
 - **Production Deployment**: Stabile Deployment-Konfiguration
 
@@ -54,7 +54,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [1.0.0] - 2025-07-26
 
 ### ✨ Hinzugefügt
-- **Initial Release**: Vollständiges Gästebuch-System
+- **Initial Release**: Complete guestbook system
 - **React Frontend**: Moderne UI mit TypeScript und TailwindCSS
 - **FastAPI Backend**: RESTful API mit SQLAlchemy
 - **MariaDB Database**: Persistente Datenspeicherung

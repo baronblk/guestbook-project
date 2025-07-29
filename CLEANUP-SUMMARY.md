@@ -48,7 +48,7 @@
 ### 🚀 Produktiv
 - **URL**: http://192.168.2.12:3000
 - **Admin**: http://192.168.2.12:3000/admin  
-- **Status**: ✅ Läuft stabil mit 46 echten Gästebewertungen
+- **Status**: ✅ Running stable with sample data for testing
 
 ### 🔧 Technisch
 - **Docker Image**: `ghcr.io/baronblk/guestbook-project/combined:latest`
@@ -91,4 +91,4 @@ guestbook-project/
 
 ---
 
-**🏠 Das Coco de Mer Gästebuch-System ist jetzt vollständig professionell organisiert und dokumentiert! 🚀**
+**🏠 The Professional Guestbook System is now fully organized and documented! 🚀**

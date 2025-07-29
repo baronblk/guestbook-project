@@ -12,8 +12,8 @@ from . import models, schemas, crud, auth, database, utils
 
 # App initialisieren
 app = FastAPI(
-    title="Gästebuch API",
-    description="Vollständiges Gästebuch-System mit Admin-Panel",
+    title="Guestbook API",
+    description="Professional Guestbook System with Admin Panel",
     version="1.0.0"
 )
 
@@ -107,7 +107,7 @@ async def create_review(
     request: Request,
     db: Session = Depends(database.get_db)
 ):
-    """Neue Bewertung erstellen"""
+    """Create new review"""
     client_ip = get_client_ip(request)
     
     # Rate Limiting
@@ -127,11 +127,11 @@ async def upload_review_image(
     file: UploadFile = File(...),
     db: Session = Depends(database.get_db)
 ):
-    """Bild zu Bewertung hochladen"""
+    """Upload image for review"""
     # Review prüfen
     db_review = crud.review_crud.get_review(db, review_id)
     if not db_review:
-        raise HTTPException(status_code=404, detail="Bewertung nicht gefunden")
+        raise HTTPException(status_code=404, detail="Review not found")
     
     # Altes Bild löschen falls vorhanden
     if db_review.image_path:
@@ -158,7 +158,7 @@ async def get_reviews(
     sort_order: str = Query("desc", pattern="^(asc|desc)$"),
     db: Session = Depends(database.get_db)
 ):
-    """Bewertungen abrufen (öffentlich)"""
+    """Get reviews (public)"""
     skip = (page - 1) * per_page
     
     # min_rating und rating sind dasselbe - min_rating hat Vorrang
@@ -194,7 +194,7 @@ async def get_reviews(
 
 @app.get("/api/reviews/{review_id}", response_model=schemas.ReviewResponse)
 async def get_review(review_id: int, db: Session = Depends(database.get_db)):
-    """Einzelne Bewertung abrufen"""
+    """Get single review"""
     db_review = crud.review_crud.get_review(db, review_id)
     if not db_review or not db_review.is_approved:
         raise HTTPException(status_code=404, detail="Bewertung nicht gefunden")
@@ -219,7 +219,7 @@ async def embed_guestbook():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Gästebuch Widget</title>
+        <title>Guestbook Widget</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
@@ -232,8 +232,8 @@ async def embed_guestbook():
     </head>
     <body>
         <div id="guestbook">
-            <h3>Kundenbewertungen</h3>
-            <div id="reviews-container">Laden...</div>
+            <h3>Customer Reviews</h3>
+            <div id="reviews-container">Loading...</div>
         </div>
         
         <script>
@@ -257,7 +257,7 @@ async def embed_guestbook():
                         container.appendChild(reviewDiv);
                     });
                 } catch (error) {
-                    document.getElementById('reviews-container').innerHTML = 'Fehler beim Laden der Bewertungen.';
+                    document.getElementById('reviews-container').innerHTML = 'Error loading reviews.';
                 }
             }
             

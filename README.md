@@ -1,6 +1,49 @@
-# 📝 Guestbook - Full Stack Web Application
+# 📝 Professional Guestbook System
 
-Ein modernes, vollständig containerisiertes Gästebuch-System mit Session-Management und Admin-Panel.
+Ein professionelles, vollständig containerisiertes Gästebuch-System mit Admin-Panel und Kommentar-Moderation.
+
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=flat&logo=mariadb&logoColor=white)
+
+## 📋 Inhaltsverzeichnis
+
+- [✨ Features](#-features)
+- [🏗️ Architektur](#️-architektur)
+- [🚀 Quick Start](#-quick-start)
+- [📁 Projektstruktur](#-projektstruktur)
+- [🔧 Konfiguration](#-konfiguration)
+- [📚 API Dokumentation](#-api-dokumentation)
+- [🛠️ Development](#️-development)
+- [🚀 Deployment](#-deployment)
+- [📖 Dokumentation](#-dokumentation)
+
+## ✨ Features
+
+### 🌟 Benutzer-Features
+- **📝 Bewertungseinträge** mit 5-Sterne-Bewertung
+- **📷 Bild-Upload** mit automatischer Optimierung
+- **📱 Responsive Design** für alle Geräte
+- **🔍 Such- und Filterfunktionen**
+- **📄 Pagination** für große Mengen von Einträgen
+- **🌐 iFrame-Einbettung** für externe Websites
+
+### 👤 Admin-Features
+- **🔐 JWT-basierte Authentifizierung**
+- **✅ Kommentar-Moderation** (Freischaltung erforderlich)
+- **⭐ Featured Reviews** hervorheben
+- **📊 Dashboard** mit Statistiken
+- **📋 CRUD-Operationen** für alle Einträge
+- **💾 Export/Import-Funktionen**
+
+### 🔧 Technische Features
+- **🐳 Vollständig containerisiert** mit Docker
+- **⚡ Multi-Platform Support** (AMD64/ARM64)
+- **🔄 Health Checks** für alle Services
+- **📈 Performance-optimiert**
+- **🔒 Sicherheits-Features** (Rate Limiting, Input Validation)
 
 ## 🏗️ Architektur
 
@@ -54,11 +97,8 @@ cd guestbook-project
 docker-compose up --build
 ```
 
-### 3. Anwendung öffnen
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **API Dokumentation**: http://localhost:8000/docs
-- **Embed Widget**: http://localhost:3000/embed
+### 3. Zugriff
+- **Bewertungssystem**: http://localhost:3000
 - **Admin-Panel**: http://localhost:3000/admin
 
 ### 4. Admin-Login
@@ -270,21 +310,22 @@ Vorbereitet für i18n:
 ## 🤝 Beitragen
 
 1. Fork das Repository
-2. Feature Branch erstellen
-3. Changes committen
-4. Pull Request erstellen
+2. Erstelle einen Feature Branch (`git checkout -b feature/amazing-feature`)
+3. Commit deine Änderungen (`git commit -m 'Add amazing feature'`)
+4. Push zum Branch (`git push origin feature/amazing-feature`)
+5. Öffne einen Pull Request
 
-## 📄 Lizenz
+## 📄 License
 
-MIT License - Siehe LICENSE Datei
+Dieses Projekt ist unter der [MIT License](LICENSE) lizenziert.
 
-## 🆘 Support
+## 🏆 Aktueller Status
 
-Bei Problemen:
-1. Logs prüfen: `docker-compose logs`
-2. Container neu starten: `docker-compose restart`
-3. Clean Build: `docker-compose down && docker-compose up --build`
+✅ **Produktiv im Einsatz**  
+✅ **Kommentar-Moderation implementiert**  
+✅ **Multi-Platform Docker Images**  
+✅ **Vollständig dokumentiert**  
 
 ---
 
-**🎉 Viel Erfolg mit Ihrem Gästebuch-System!**
+**Professionelles Bewertungssystem für moderne Anwendungen** 🚀
