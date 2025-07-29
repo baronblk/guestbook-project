@@ -359,6 +359,72 @@ async def admin_import_reviews(
         "imported_count": len(created_reviews)
     }
 
+@app.post("/api/admin/reviews/import-export")
+async def admin_import_from_export(
+    export_data: dict,
+    import_source: str = Query("export_reimport", description="Source identifier for imported reviews"),
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Export-Datei direkt importieren (Admin)"""
+    try:
+        # Export-Format zu Import-Format konvertieren
+        import_data = utils.ImportExportUtils.convert_export_to_import_format(
+            export_data, import_source
+        )
+        
+        # Import durchführen
+        created_reviews = crud.review_crud.bulk_import_reviews(
+            db, 
+            [schemas.ImportReview(**review) for review in import_data['reviews']], 
+            import_data['source']
+        )
+        
+        return {
+            "message": f"{len(created_reviews)} Bewertungen aus Export-Datei erfolgreich importiert",
+            "imported_count": len(created_reviews),
+            "source": import_data['source']
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Fehler beim Importieren der Daten")
+
+@app.post("/api/admin/import")
+async def admin_import_export_data(
+    import_data: dict,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Legacy Import-Endpunkt für Admin-Dashboard (Export-Daten importieren)"""
+    try:
+        # Prüfen ob es Export-Format ist (hat "reviews" und "exported_at")
+        if 'reviews' in import_data and 'exported_at' in import_data:
+            # Export-Format zu Import-Format konvertieren
+            converted_data = utils.ImportExportUtils.convert_export_to_import_format(
+                import_data, "admin_dashboard_import"
+            )
+            
+            # Import durchführen
+            created_reviews = crud.review_crud.bulk_import_reviews(
+                db, 
+                [schemas.ImportReview(**review) for review in converted_data['reviews']], 
+                converted_data['source']
+            )
+            
+            return {
+                "message": f"{len(created_reviews)} Bewertungen erfolgreich importiert",
+                "imported_count": len(created_reviews)
+            }
+        else:
+            # Legacy Format handling
+            raise HTTPException(status_code=400, detail="Unsupported import format")
+            
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Fehler beim Importieren der Daten")
+
 @app.get("/api/admin/stats")
 async def admin_get_stats(
     current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
@@ -373,7 +439,7 @@ async def admin_export_reviews(
     db: Session = Depends(database.get_db)
 ):
     """Bewertungen exportieren (Admin)"""
-    reviews, _ = crud.review_crud.get_reviews(db, approved_only=False, limit=10000)
+    reviews, _ = crud.review_crud.get_reviews(db, approved_only=None, limit=10000)
     export_data = utils.ImportExportUtils.export_reviews_json(reviews)
     
     return JSONResponse(

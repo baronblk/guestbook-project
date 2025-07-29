@@ -167,16 +167,46 @@ class ImportExportUtils:
                 {
                     'id': review.id,
                     'name': review.name,
+                    'email': review.email,
                     'rating': review.rating,
                     'title': review.title,
                     'content': review.content,
-                    'created_at': review.created_at.isoformat(),
-                    'is_featured': review.is_featured
+                    'created_at': review.created_at.isoformat() if review.created_at else None,
+                    'updated_at': review.updated_at.isoformat() if review.updated_at else None,
+                    'is_approved': review.is_approved,
+                    'is_featured': review.is_featured,
+                    'import_source': getattr(review, 'import_source', None),
+                    'external_id': getattr(review, 'external_id', None)
                 }
                 for review in reviews
             ]
         }
         return export_data
+    
+    @staticmethod
+    def convert_export_to_import_format(export_data: dict, import_source: str = "export_reimport") -> dict:
+        """Konvertiert Export-Format zu Import-Format"""
+        if 'reviews' not in export_data:
+            raise ValueError("Invalid export format: missing 'reviews' key")
+        
+        import_reviews = []
+        for review in export_data['reviews']:
+            import_review = {
+                'name': review['name'],
+                'rating': review['rating'],
+                'content': review['content'],
+                'title': review.get('title'),
+                'email': review.get('email'),
+                'created_at': review.get('created_at'),
+                'import_source': import_source,
+                'external_id': review.get('external_id')
+            }
+            import_reviews.append(import_review)
+        
+        return {
+            'source': import_source,
+            'reviews': import_reviews
+        }
 
 from io import BytesIO
 from datetime import datetime
