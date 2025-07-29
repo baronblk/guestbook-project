@@ -459,6 +459,14 @@ async def admin_get_stats(
     """Vollständige Statistiken (Admin)"""
     return crud.review_crud.get_review_stats(db)
 
+@app.get("/api/admin/stats/comments")
+async def admin_get_comments_stats(
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Kommentar-Statistiken für Dashboard (Admin)"""
+    return crud.comment_crud.get_comment_stats(db)
+
 @app.get("/api/admin/export")
 async def admin_export_reviews(
     include_comments: bool = Query(True, description="Include comments in export"),

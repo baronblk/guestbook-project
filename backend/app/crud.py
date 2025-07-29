@@ -134,12 +134,19 @@ class ReviewCRUD:
             func.count(models.Review.id).label('count')
         ).filter(models.Review.is_approved == True).group_by(models.Review.rating).all()
         
+        # Kommentar-Statistiken hinzufügen
+        comment_stats = comment_crud.get_comment_stats(db)
+        
         return {
             "total_reviews": total_reviews,
             "approved_reviews": approved_reviews,
             "pending_reviews": total_reviews - approved_reviews,
             "average_rating": round(float(avg_rating), 2),
-            "rating_distribution": {str(rating): count for rating, count in rating_distribution}
+            "rating_distribution": {str(rating): count for rating, count in rating_distribution},
+            # Kommentar-Statistiken
+            "total_comments": comment_stats["total_comments"],
+            "approved_comments": comment_stats["approved_comments"],
+            "pending_comments": comment_stats["pending_comments"]
         }
     
     @staticmethod
