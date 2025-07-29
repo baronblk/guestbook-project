@@ -195,3 +195,43 @@ config/local.json
 *.njsproj
 *.sln
 *.sw?
+
+# Development und Test-Skripte
+import_*.py
+create_*.py
+delete_*.py
+fix_*.py
+fix_*.sh
+generate_*.py
+migrate_*.py
+test_*.py
+update_review_dates.py
+direct_import.py
+
+# Import/Export Test-Daten
+import_*.json
+gaestebuch_import.json
+missing_reviews.sql
+insert_reviews.sql
+
+# Environment-spezifische Dateien
+.env.portainer
+.env.production
+
+# Alternative Docker Compose Dateien
+docker-compose.portainer*.yml
+docker-compose.prod.yml
+docker-compose.synology.yml
+docker-compose.test.yml
+
+# Alternative Dockerfiles
+Dockerfile.reviews
+Dockerfile.simple
+
+# Portainer spezifische Dateien
+portainer-stack.yml
+
+# Temporäre Deployment Dokumentation
+COMBINED-DEPLOYMENT.md
+DEPLOYMENT.md
+PORTAINER-DEPLOYMENT.md

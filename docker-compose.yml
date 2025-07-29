@@ -22,7 +22,9 @@ services:
       - guestbook-network
 
   backend:
-    image: ghcr.io/baronblk/guestbook-project/backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     restart: unless-stopped
     platform: linux/amd64
     ports:
