@@ -69,6 +69,56 @@ class ReviewListResponse(BaseModel):
     per_page: int
     total_pages: int
 
+# Comment Schemas
+class CommentBase(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100, description="Name des Kommentators")
+    email: Optional[EmailStr] = Field(None, description="Optional: E-Mail für Benachrichtigungen")
+    content: str = Field(..., min_length=5, max_length=2000, description="Kommentartext")
+    
+    @validator('content')
+    def validate_content(cls, v):
+        if len(v.strip()) < 5:
+            raise ValueError('Kommentar muss mindestens 5 Zeichen haben')
+        return v.strip()
+
+class CommentCreate(CommentBase):
+    """Schema für neuen Kommentar"""
+    pass
+
+class CommentUpdate(BaseModel):
+    """Schema für Kommentar-Updates (Admin)"""
+    name: Optional[str] = Field(None, min_length=2, max_length=100)
+    email: Optional[EmailStr] = None
+    content: Optional[str] = Field(None, min_length=5, max_length=2000)
+    is_approved: Optional[bool] = None
+    admin_notes: Optional[str] = None
+
+class CommentResponse(CommentBase):
+    """Schema für Kommentar-Response"""
+    id: int
+    review_id: int
+    created_at: datetime
+    updated_at: Optional[datetime]
+    is_approved: bool
+    
+    class Config:
+        from_attributes = True
+
+class CommentAdminResponse(CommentResponse):
+    """Erweiterte Response für Admin"""
+    admin_notes: Optional[str]
+    ip_address: Optional[str]
+
+class CommentListResponse(BaseModel):
+    """Paginierte Liste von Kommentaren"""
+    comments: List[CommentResponse]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+    # Tab-Statistiken für Frontend
+    tab_stats: Optional[dict] = None
+
 # Admin Schemas
 class AdminUserBase(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)

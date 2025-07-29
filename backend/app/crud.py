@@ -7,6 +7,7 @@ from passlib.context import CryptContext
 
 from . import models, schemas
 
+
 # Passwort-Hashing Kontext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -17,8 +18,6 @@ def get_password_hash(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Password verifizieren"""
     return pwd_context.verify(plain_password, hashed_password)
-
-# Review CRUD
 class ReviewCRUD:
     
     @staticmethod
@@ -135,7 +134,7 @@ class ReviewCRUD:
         ).filter(models.Review.is_approved == True).group_by(models.Review.rating).all()
         
         # Kommentar-Statistiken hinzufügen
-        comment_stats = comment_crud.get_comment_stats(db)
+        comment_stats = review_crud.get_comment_stats(db)
         
         return {
             "total_reviews": total_reviews,
