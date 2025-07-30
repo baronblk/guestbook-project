@@ -1,0 +1,81 @@
+version: "3.9"
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: Kx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB
+      MYSQL_DATABASE: guestbook
+      MYSQL_USER: guestuser
+      MYSQL_PASSWORD: whHBJveMvwjs5a6p
+      # MariaDB 11 spezifische Variablen
+      MARIADB_ROOT_PASSWORD: Kx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB
+      MARIADB_DATABASE: guestbook
+      MARIADB_USER: guestuser
+      MARIADB_PASSWORD: whHBJveMvwjs5a6p
+      # Debug-Modus
+      MARIADB_AUTO_UPGRADE: 1
+      MARIADB_INITDB_SKIP_TZINFO: 1
+    volumes:
+    - guestbook-db-data:/var/lib/mysql
+    ports:
+    - "3306:3306" # Für Debugging
+    healthcheck:
+      test: [ "CMD", "mariadb", "-h", "localhost", "-u", "root", "-pKx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB", "-e", "SELECT 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+    networks:
+    - guestbook-network
+
+  app:
+    image: ghcr.io/baronblk/guestbook-project/combined:2.0.1
+    restart: unless-stopped
+    platform: linux/amd64
+    ports:
+    - "3000:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: guestuser
+      DB_PASSWORD: whHBJveMvwjs5a6p
+      DB_NAME: guestbook
+      JWT_SECRET_KEY: DeRBC3FDeY8d9nw9WMBwNJ0LpVyvB5ty607r2PHdmQBpqn
+      ADMIN_USERNAME: admin
+      ADMIN_EMAIL: support@dcng.de
+      ADMIN_PASSWORD: whHBJveMvwjs5a6p
+      # Debug-Konfiguration
+      NODE_ENV: production
+      LOG_LEVEL: debug
+      # CORS für alle Origins erlauben
+      ALLOWED_ORIGINS: "*"
+      # Frontend API URL leer lassen (relative URLs)
+      REACT_APP_API_URL: ""
+    volumes:
+    - guestbook-upload-data:/app/uploads
+    - guestbook-logs-data:/app/logs
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+    - guestbook-network
+
+networks:
+  guestbook-network:
+    driver: bridge
+
+volumes:
+  guestbook-db-data:
+    driver: local
+  guestbook-upload-data:
+    driver: local
+  guestbook-logs-data:
+    driver: local
