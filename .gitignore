@@ -1,0 +1,35 @@
+# Byte- und Log-Dateien
+*.log
+*.sqlite3
+*.db
+*.pyc
+__pycache__/
+
+# Python-Umgebungen
+.venv/
+env/
+venv/
+
+# Node.js
+node_modules/
+frontend/node_modules/
+
+# Build-Ordner
+frontend/build/
+frontend/build/static/
+
+# Datenbank und Uploads
+data/db/
+data/uploads/
+backend/uploads/
+
+# Systemdateien
+.DS_Store
+Thumbs.db
+
+# Umgebungsvariablen
+.env
+.env.*
+
+# Sonstiges
+uploads/
