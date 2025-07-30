@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 # Docker Compose für lokale Entwicklung mit Docker Desktop
 # Verwendung: docker-compose -f docker-compose.dev.yml up --build
@@ -12,12 +12,12 @@ services:
     environment:
       - DB_HOST=db
       - DB_USER=guestuser
-      - DB_PASSWORD=guestpw
+      - DB_PASSWORD=whHBJveMvwjs5a6p
       - DB_NAME=guestbook
-      - JWT_SECRET_KEY=your-super-secret-jwt-key-change-in-production
+      - JWT_SECRET_KEY=DeRBC3FDeY8d9nw9WMBwNJ0LpVyvB5ty607r2PHdmQBpqn
       - ADMIN_USERNAME=admin
-      - ADMIN_EMAIL=admin@guestbook.local
-      - ADMIN_PASSWORD=admin123
+      - ADMIN_EMAIL=support@dcng.de
+      - ADMIN_PASSWORD=whHBJveMvwjs5a6p
     volumes:
       - ./backend:/app
       - backend_uploads:/app/uploads
@@ -28,7 +28,16 @@ services:
     networks:
       - guestbook-network
     # Development: Hot reload
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+      ]
 
   frontend:
     build:
@@ -43,7 +52,7 @@ services:
       - ./frontend/public:/app/public
       - /app/node_modules
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - backend
     networks:
@@ -56,14 +65,14 @@ services:
     image: mariadb:10.11
     restart: unless-stopped
     environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_ROOT_PASSWORD=Kx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB
       - MYSQL_DATABASE=guestbook
       - MYSQL_USER=guestuser
-      - MYSQL_PASSWORD=guestpw
+      - MYSQL_PASSWORD=whHBJveMvwjs5a6p
     volumes:
       - db_data_dev:/var/lib/mysql
     ports:
-      - "3306:3306"  # Für lokale DB-Verbindungen
+      - "3306:3306" # Für lokale DB-Verbindungen
     networks:
       - guestbook-network
     healthcheck:
@@ -78,8 +87,8 @@ services:
     environment:
       - PMA_HOST=db
       - PMA_USER=guestuser
-      - PMA_PASSWORD=guestpw
-      - MYSQL_ROOT_PASSWORD=rootpassword
+      - PMA_PASSWORD=whHBJveMvwjs5a6p
+      - MYSQL_ROOT_PASSWORD=Kx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB
     ports:
       - "8080:80"
     depends_on:
