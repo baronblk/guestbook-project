@@ -21,12 +21,11 @@ RUN apt-get update && apt-get install -y \
 
 # Backend Setup
 WORKDIR /app
-COPY backend/requirements.txt .
+COPY backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
 COPY backend/ ./backend/
-COPY wait-for-db.py ./backend/
 
 # Copy built frontend from previous stage
 COPY --from=frontend-builder /app/frontend/build /var/www/html

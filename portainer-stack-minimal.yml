@@ -10,15 +10,15 @@ services:
       MARIADB_USER: guestuser
       MARIADB_PASSWORD: whHBJveMvwjs5a6p
     volumes:
-      - db_data:/var/lib/mysql
+    - db_data:/var/lib/mysql
 
   app:
-    image: ghcr.io/baronblk/guestbook-project/combined:2.0.1
+    image: ghcr.io/baronblk/guestbook-project/combined:2.0.2
     restart: unless-stopped
     ports:
-      - "3000:80"
+    - "3000:80"
     depends_on:
-      - db
+    - db
     environment:
       DB_HOST: db
       DB_USER: guestuser
@@ -29,7 +29,7 @@ services:
       ADMIN_EMAIL: support@dcng.de
       ADMIN_PASSWORD: whHBJveMvwjs5a6p
     volumes:
-      - uploads_data:/app/uploads
+    - uploads_data:/app/uploads
 
 volumes:
   db_data:
