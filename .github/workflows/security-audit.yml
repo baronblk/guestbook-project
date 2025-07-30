@@ -2,8 +2,8 @@ name: Security Audit
 
 on:
   schedule:
-    # Täglich um 2:00 UTC ausführen
-    - cron: '0 2 * * *'
+  # Täglich um 2:00 UTC ausführen
+  - cron: '0 2 * * *'
   push:
     branches: [ master, main ]
   pull_request:
@@ -12,7 +12,7 @@ on:
 jobs:
   security-audit-python:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
 
   security-audit-node:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -62,7 +62,7 @@ jobs:
 
   docker-security:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -100,7 +100,7 @@ jobs:
 
   codeql:
     runs-on: ubuntu-latest
-    
+
     permissions:
       actions: read
       contents: read

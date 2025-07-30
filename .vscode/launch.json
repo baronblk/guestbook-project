@@ -10,7 +10,7 @@
       "cwd": "${workspaceFolder}/backend",
       "env": {
         "DB_HOST": "localhost",
-        "DB_USER": "guestuser", 
+        "DB_USER": "guestuser",
         "DB_PASSWORD": "guestpw",
         "DB_NAME": "guestbook",
         "JWT_SECRET_KEY": "your-super-secret-jwt-key-change-in-production"
@@ -21,7 +21,7 @@
     },
     {
       "name": "Python: Create Admin User",
-      "type": "debugpy", 
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/backend/create_admin.py",
       "console": "integratedTerminal",
@@ -29,7 +29,7 @@
       "env": {
         "DB_HOST": "localhost",
         "DB_USER": "guestuser",
-        "DB_PASSWORD": "guestpw", 
+        "DB_PASSWORD": "guestpw",
         "DB_NAME": "guestbook",
         "JWT_SECRET_KEY": "your-super-secret-jwt-key-change-in-production",
         "ADMIN_USERNAME": "admin",

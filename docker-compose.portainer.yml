@@ -1,93 +1,97 @@
 version: '3.8'
 
+# Portainer Stack für UGreen NAS Deployment
+# Verwendet GHCR.io Images für Production
+
 services:
-  mariadb:
-    image: mariadb:10.11
-    container_name: guestbook-mariadb
+  backend:
+    image: ghcr.io/baronblk/guestbook-project/backend:latest
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-super_secure_root_password_2024}
-      MYSQL_DATABASE: ${DB_NAME:-guestbook}
-      MYSQL_USER: ${DB_USER:-guestbook_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-secure_database_password_2024}
+      - DB_HOST=db
+      - DB_USER=guestuser
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=guestbook
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - backend_uploads:/app/uploads
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      - db
     networks:
       - guestbook-network
-    healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      start_period: 10s
-      interval: 10s
-      timeout: 5s
-      retries: 3
     deploy:
       resources:
         limits:
           memory: 512M
+          cpus: '0.5'
         reservations:
           memory: 256M
-
-  backend:
-    image: ghcr.io/${GITHUB_REPOSITORY:-baronblk/guestbook-project}/backend:${IMAGE_TAG:-latest}
-    container_name: guestbook-backend
-    restart: unless-stopped
-    environment:
-      DATABASE_URL: mysql+pymysql://${DB_USER:-guestbook_user}:${DB_PASSWORD:-secure_database_password_2024}@mariadb:3306/${DB_NAME:-guestbook}
-      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production-xyz123}
-      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-change-in-production-abc456}
-      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@yourdomain.com}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-secure_admin_password_2024}
-      CORS_ORIGINS: ${API_CORS_ORIGINS:-http://localhost,http://192.168.1.100}
-    volumes:
-      - backend_uploads:/app/uploads
-    depends_on:
-      mariadb:
-        condition: service_healthy
-    networks:
-      - guestbook-network
-    ports:
-      - "8000:8000"
+          cpus: '0.25'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 256M
 
   frontend:
-    image: ghcr.io/${GITHUB_REPOSITORY:-baronblk/guestbook-project}/frontend:${IMAGE_TAG:-latest}
-    container_name: guestbook-frontend
+    image: ghcr.io/baronblk/guestbook-project/frontend:latest
     restart: unless-stopped
     environment:
-      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://192.168.1.100:8000}
+      - REACT_APP_API_URL=${REACT_APP_API_URL}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
       - backend
     networks:
       - guestbook-network
-    ports:
-      - "${FRONTEND_PORT:-80}:80"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
     deploy:
       resources:
         limits:
           memory: 256M
+          cpus: '0.25'
         reservations:
           memory: 128M
+          cpus: '0.1'
+
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=guestbook
+      - MYSQL_USER=guestuser
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_INITDB_SKIP_TZINFO=1
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - guestbook-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "guestuser", "-p${DB_PASSWORD}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    command: >
+      --innodb-buffer-pool-size=256M
+      --max-connections=100
+      --query-cache-size=32M
+      --query-cache-type=1
 
 volumes:
-  mariadb_data:
+  db_data:
     driver: local
   backend_uploads:
     driver: local
@@ -95,6 +99,16 @@ volumes:
 networks:
   guestbook-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
+
+# Environment Variables für Portainer Stack:
+# Setze diese in Portainer unter "Environment variables"
+#
+# DB_PASSWORD=your-secure-db-password-here
+# MYSQL_ROOT_PASSWORD=your-secure-root-password-here
+# JWT_SECRET_KEY=your-super-secret-jwt-key-change-in-production
+# ADMIN_USERNAME=admin
+# ADMIN_EMAIL=admin@guestbook.local
+# ADMIN_PASSWORD=your-secure-admin-password-here
+# REACT_APP_API_URL=http://YOUR-UGREEN-NAS-IP:8000
+# FRONTEND_PORT=3000
+# BACKEND_PORT=8000

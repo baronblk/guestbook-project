@@ -4,17 +4,23 @@
   "description": "Ein modernes, vollständig containerisiertes Gästebuch-System mit React Frontend und FastAPI Backend",
   "main": "index.js",
   "scripts": {
-    "dev": "docker-compose up --build",
-    "start": "docker-compose up",
+    "dev": "docker-compose -f docker-compose.dev.yml up --build",
+    "dev:detached": "docker-compose -f docker-compose.dev.yml up --build -d",
+    "start": "docker-compose up --build",
+    "start:detached": "docker-compose up --build -d",
     "stop": "docker-compose down",
     "clean": "docker-compose down -v --remove-orphans",
     "logs": "docker-compose logs -f",
     "build": "docker-compose build",
+    "build:prod": "docker build -t ghcr.io/baronblk/guestbook-project/backend:latest ./backend && docker build -t ghcr.io/baronblk/guestbook-project/frontend:latest ./frontend",
+    "push": "docker push ghcr.io/baronblk/guestbook-project/backend:latest && docker push ghcr.io/baronblk/guestbook-project/frontend:latest",
     "test": "docker-compose exec frontend npm test && docker-compose exec backend pytest",
     "lint": "docker-compose exec frontend npm run lint && docker-compose exec backend flake8",
     "format": "docker-compose exec frontend npm run format && docker-compose exec backend black .",
     "backup": "docker-compose exec db mysqldump -u guestuser -pguestpw guestbook > backup.sql",
-    "restore": "docker-compose exec -T db mysql -u guestuser -pguestpw guestbook < backup.sql"
+    "restore": "docker-compose exec -T db mysql -u guestuser -pguestpw guestbook < backup.sql",
+    "deploy:portainer": "echo 'Verwende docker-compose.portainer.yml für Portainer Stack Deployment'",
+    "health": "curl -f http://localhost:8000/health && curl -f http://localhost:3000"
   },
   "repository": {
     "type": "git",

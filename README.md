@@ -45,13 +45,27 @@ Ein modernes, vollständig containerisiertes Gästebuch-System mit Session-Manag
 
 ### 1. Repository klonen
 ```bash
-git clone <repository-url>
+git clone https://github.com/baronblk/guestbook-project.git
 cd guestbook-project
 ```
 
-### 2. System starten
+### 2. Development Setup (Docker Desktop)
+
+#### Option A: Standard Development
 ```bash
 docker-compose up --build
+```
+
+#### Option B: Development mit Hot Reload
+```bash
+docker-compose -f docker-compose.dev.yml up --build
+```
+
+#### Option C: NPM Scripts verwenden
+```bash
+npm run dev          # Development mit Hot Reload
+npm start           # Standard Build
+npm run dev:detached # Im Hintergrund
 ```
 
 ### 3. Anwendung öffnen
@@ -60,11 +74,31 @@ docker-compose up --build
 - **API Dokumentation**: http://localhost:8000/docs
 - **Embed Widget**: http://localhost:3000/embed
 - **Admin-Panel**: http://localhost:3000/admin
+- **phpMyAdmin** (nur dev): http://localhost:8080
 
 ### 4. Admin-Login
 - **Username**: `admin`
 - **Passwort**: `admin123`
 - ⚠️ **Bitte nach dem ersten Login ändern!**
+
+## 🏭 Production Deployment
+
+### Option 1: UGreen NAS + Portainer Stack
+1. Images werden automatisch zu GHCR.io gepusht
+2. `docker-compose.portainer.yml` in Portainer importieren
+3. Environment Variables setzen
+4. Stack deployen
+
+**Siehe [DEPLOYMENT-GUIDE.md](./DEPLOYMENT-GUIDE.md) für Details!**
+
+### Option 2: Docker Images von GHCR.io
+```bash
+# Backend
+docker pull ghcr.io/baronblk/guestbook-project/backend:latest
+
+# Frontend  
+docker pull ghcr.io/baronblk/guestbook-project/frontend:latest
+```
 
 ## 📁 Projektstruktur
 
