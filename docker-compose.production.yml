@@ -1,0 +1,182 @@
+version: "3.9"
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: Kx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB
+      MYSQL_DATABASE: guestbook
+      MYSQL_USER: guestuser
+      MYSQL_PASSWORD: whHBJveMvwjs5a6p
+      # Zusätzliche MariaDB-Optimierungen für Produktion
+      MYSQL_INNODB_BUFFER_POOL_SIZE: 256M
+      MYSQL_INNODB_LOG_FILE_SIZE: 64M
+    volumes:
+      # Hauptdatenbank-Volume (bereits konfiguriert)
+      - /volume2/docker/guestbook/db:/var/lib/mysql
+      # Backup-Volume für automatische Backups
+      - /volume2/docker/guestbook/backups:/backups
+      # MariaDB-Konfigurationsdatei
+      - ./config/mariadb/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mariadb-admin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-pKx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - guestbook-network
+
+  app:
+    image: ghcr.io/baronblk/guestbook-project/combined:latest
+    restart: unless-stopped
+    platform: linux/amd64
+    ports:
+      - "3000:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: guestuser
+      DB_PASSWORD: whHBJveMvwjs5a6p
+      DB_NAME: guestbook
+      JWT_SECRET_KEY: DeRBC3FDeY8d9nw9WMBwNJ0LpVyvB5ty607r2PHdmQBpqn
+      ADMIN_USERNAME: admin
+      ADMIN_EMAIL: support@dcng.de
+      ADMIN_PASSWORD: whHBJveMvwjs5a6p
+      # Produktionsumgebung-Einstellungen
+      NODE_ENV: production
+      LOG_LEVEL: info
+    volumes:
+      # Upload-Dateien persistent speichern
+      - /volume2/docker/guestbook/uploads:/app/uploads
+      # Logs persistent speichern
+      - /volume2/docker/guestbook/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - guestbook-network
+
+  # Automatischer Backup-Service
+  db-backup:
+    image: mariadb:11
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: Kx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB
+      DB_NAME: guestbook
+      BACKUP_RETENTION_DAYS: 30
+    volumes:
+      - /volume2/docker/guestbook/backups:/backups
+      - ./scripts/backup.sh:/backup.sh:ro
+    command: >
+      sh -c "
+        # Warte bis die Datenbank bereit ist
+        while ! mariadb-admin ping -h db -u root -p$$DB_PASSWORD --silent; do
+          echo 'Waiting for database...'
+          sleep 10
+        done
+        echo 'Database is ready, starting backup service...'
+
+        # Führe alle 6 Stunden ein Backup aus
+        while true; do
+          echo 'Starting backup at' $$(date)
+
+          # Erstelle Backup mit Zeitstempel
+          BACKUP_FILE=\"/backups/guestbook_backup_$$(date +%Y%m%d_%H%M%S).sql\"
+          mariadb-dump -h db -u root -p$$DB_PASSWORD --single-transaction --routines --triggers $$DB_NAME > \"$$BACKUP_FILE\"
+
+          if [ $$? -eq 0 ]; then
+            echo \"Backup created successfully: $$BACKUP_FILE\"
+            gzip \"$$BACKUP_FILE\"
+            echo \"Backup compressed: $$BACKUP_FILE.gz\"
+          else
+            echo \"Backup failed!\"
+          fi
+
+          # Lösche Backups älter als BACKUP_RETENTION_DAYS Tage
+          find /backups -name \"guestbook_backup_*.sql.gz\" -type f -mtime +$$BACKUP_RETENTION_DAYS -delete
+          echo \"Old backups cleaned up\"
+
+          # Warte 6 Stunden (21600 Sekunden)
+          sleep 21600
+        done
+      "
+    networks:
+      - guestbook-network
+
+  # Monitoring Service (optional)
+  watchtower:
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      # Prüfe alle 24 Stunden auf Updates
+      WATCHTOWER_POLL_INTERVAL: 86400
+      # Nur das guestbook-app überwachen
+      WATCHTOWER_SCOPE: guestbook-production
+      # Benachrichtigungen per E-Mail (optional)
+      WATCHTOWER_NOTIFICATIONS: email
+      WATCHTOWER_NOTIFICATION_EMAIL_FROM: system@yourdomain.com
+      WATCHTOWER_NOTIFICATION_EMAIL_TO: admin@yourdomain.com
+      # SMTP-Einstellungen (anpassen)
+      # WATCHTOWER_NOTIFICATION_EMAIL_SERVER: smtp.gmail.com
+      # WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: 587
+      # WATCHTOWER_NOTIFICATION_EMAIL_SERVER_USER: your-email@gmail.com
+      # WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD: your-app-password
+    labels:
+      - com.centurylinklabs.watchtower.scope=guestbook-production
+    command: --scope guestbook-production --cleanup
+
+networks:
+  guestbook-network:
+    driver: bridge
+
+# Named Volumes für bessere Verwaltung (Alternative zu Host-Mounts)
+volumes:
+  guestbook-db:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /volume2/docker/guestbook/db
+  guestbook-uploads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /volume2/docker/guestbook/uploads
+  guestbook-backups:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /volume2/docker/guestbook/backups
+  guestbook-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /volume2/docker/guestbook/logs
