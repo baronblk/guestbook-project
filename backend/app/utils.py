@@ -180,3 +180,24 @@ class ImportExportUtils:
 
 from io import BytesIO
 from datetime import datetime
+from fastapi import Request
+
+def get_client_ip(request: Request) -> str:
+    """
+    Ermittelt die Client-IP-Adresse aus dem Request
+    """
+    # Prüfe verschiedene Header für die echte Client-IP
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        # Nimm die erste IP aus der Liste (Original Client)
+        return forwarded_for.split(",")[0].strip()
+    
+    real_ip = request.headers.get("X-Real-IP")
+    if real_ip:
+        return real_ip.strip()
+    
+    # Fallback auf die direkte Client-IP
+    if request.client:
+        return request.client.host
+    
+    return "unknown"

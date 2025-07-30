@@ -11,7 +11,7 @@ services:
       MYSQL_USER: guestuser
       MYSQL_PASSWORD: whHBJveMvwjs5a6p
     volumes:
-      - /volume2/docker/guestbook/db:/var/lib/mysql
+      - ./data/db:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-pKx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB"]
       interval: 10s
@@ -22,7 +22,9 @@ services:
       - guestbook-network
 
   backend:
-    image: ghcr.io/baronblk/guestbook-project/backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     restart: unless-stopped
     platform: linux/amd64
     ports:
@@ -40,7 +42,8 @@ services:
       ADMIN_EMAIL: support@dcng.de
       ADMIN_PASSWORD: whHBJveMvwjs5a6p
     volumes:
-      - /volume2/docker/guestbook/uploads:/app/uploads
+      - ./data/uploads:/app/uploads
+      - ./backend/app:/app/app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -51,7 +54,9 @@ services:
       - guestbook-network
 
   frontend:
-    image: ghcr.io/baronblk/guestbook-project/frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     restart: unless-stopped
     platform: linux/amd64
     ports:
@@ -59,7 +64,7 @@ services:
     depends_on:
       - backend
     environment:
-      REACT_APP_API_URL: https://guestbook.gcng.de/api
+      REACT_APP_API_URL: http://localhost:8001
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
       interval: 30s

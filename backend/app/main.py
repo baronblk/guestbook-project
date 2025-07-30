@@ -183,7 +183,64 @@ async def get_review(review_id: int, db: Session = Depends(database.get_db)):
     db_review = crud.review_crud.get_review(db, review_id)
     if not db_review or not db_review.is_approved:
         raise HTTPException(status_code=404, detail="Bewertung nicht gefunden")
+    
+    # Kommentar-Anzahl hinzufügen
+    comment_count = crud.comment_crud.count_approved_comments_by_review(db, review_id)
+    db_review.comment_count = comment_count
+    
     return db_review
+
+# === COMMENT ENDPOINTS ===
+
+@app.post("/api/reviews/{review_id}/comments", response_model=schemas.CommentResponse)
+async def create_comment(
+    review_id: int,
+    comment: schemas.CommentCreate,
+    request: Request,
+    db: Session = Depends(database.get_db)
+):
+    """Neuen Kommentar zu einer Bewertung erstellen"""
+    # Prüfen ob Review existiert und genehmigt ist
+    db_review = crud.review_crud.get_review(db, review_id)
+    if not db_review or not db_review.is_approved:
+        raise HTTPException(status_code=404, detail="Bewertung nicht gefunden")
+    
+    # IP-Adresse für Anti-Spam speichern
+    client_ip = utils.get_client_ip(request)
+    
+    try:
+        db_comment = crud.comment_crud.create_comment(db, comment, client_ip, review_id)
+        return db_comment
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Fehler beim Erstellen des Kommentars: {str(e)}")
+
+@app.get("/api/reviews/{review_id}/comments", response_model=schemas.CommentListResponse)
+async def get_comments_by_review(
+    review_id: int,
+    page: int = Query(1, ge=1, description="Seitennummer"),
+    per_page: int = Query(10, ge=1, le=50, description="Einträge pro Seite"),
+    db: Session = Depends(database.get_db)
+):
+    """Kommentare für eine bestimmte Bewertung abrufen"""
+    # Prüfen ob Review existiert und genehmigt ist
+    db_review = crud.review_crud.get_review(db, review_id)
+    if not db_review or not db_review.is_approved:
+        raise HTTPException(status_code=404, detail="Bewertung nicht gefunden")
+    
+    skip = (page - 1) * per_page
+    comments, total = crud.comment_crud.get_comments_by_review(
+        db, review_id, skip=skip, limit=per_page, approved_only=True
+    )
+    
+    total_pages = math.ceil(total / per_page)
+    
+    return {
+        "comments": comments,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": total_pages
+    }
 
 @app.get("/api/stats")
 async def get_stats(db: Session = Depends(database.get_db)):
@@ -417,6 +474,91 @@ async def admin_reject_review(
     if not rejected_review:
         raise HTTPException(status_code=404, detail="Bewertung nicht gefunden")
     return rejected_review
+
+# === ADMIN COMMENT ENDPOINTS ===
+
+@app.get("/api/admin/comments", response_model=schemas.CommentListResponse)
+async def admin_get_comments(
+    page: int = Query(1, ge=1, description="Seitennummer"),
+    per_page: int = Query(10, ge=1, le=100, description="Einträge pro Seite"),
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Alle Kommentare abrufen (Admin)"""
+    skip = (page - 1) * per_page
+    comments, total = crud.comment_crud.get_comments(
+        db, skip=skip, limit=per_page, approved_only=False
+    )
+    
+    total_pages = math.ceil(total / per_page)
+    
+    return {
+        "comments": comments,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": total_pages
+    }
+
+@app.get("/api/admin/comments/pending", response_model=schemas.CommentListResponse)
+async def admin_get_pending_comments(
+    page: int = Query(1, ge=1, description="Seitennummer"),
+    per_page: int = Query(10, ge=1, le=100, description="Einträge pro Seite"),
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Pending Kommentare abrufen (Admin)"""
+    skip = (page - 1) * per_page
+    comments, total = crud.comment_crud.get_pending_comments(
+        db, skip=skip, limit=per_page
+    )
+    
+    total_pages = math.ceil(total / per_page)
+    
+    return {
+        "comments": comments,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": total_pages
+    }
+
+@app.put("/api/admin/comments/{comment_id}", response_model=schemas.CommentAdminResponse)
+async def admin_update_comment(
+    comment_id: int,
+    comment_update: schemas.CommentUpdate,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Kommentar aktualisieren (Admin)"""
+    updated_comment = crud.comment_crud.update_comment(db, comment_id, comment_update)
+    if not updated_comment:
+        raise HTTPException(status_code=404, detail="Kommentar nicht gefunden")
+    return updated_comment
+
+@app.post("/api/admin/comments/{comment_id}/approve", response_model=schemas.CommentAdminResponse)
+async def admin_approve_comment(
+    comment_id: int,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Kommentar genehmigen (Admin)"""
+    approved_comment = crud.comment_crud.approve_comment(db, comment_id)
+    if not approved_comment:
+        raise HTTPException(status_code=404, detail="Kommentar nicht gefunden")
+    return approved_comment
+
+@app.delete("/api/admin/comments/{comment_id}")
+async def admin_delete_comment(
+    comment_id: int,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Kommentar löschen (Admin)"""
+    deleted = crud.comment_crud.delete_comment(db, comment_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Kommentar nicht gefunden")
+    return {"message": "Kommentar erfolgreich gelöscht"}
 
 # Error Handlers
 @app.exception_handler(HTTPException)

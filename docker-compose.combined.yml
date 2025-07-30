@@ -22,11 +22,11 @@ services:
       - guestbook-network
 
   app:
-    image: ghcr.io/baronblk/guestbook-project/simple:latest
+    image: ghcr.io/baronblk/guestbook-project/combined:latest
     restart: unless-stopped
     platform: linux/amd64
     ports:
-      - "3000:8000"
+      - "3000:80"
     depends_on:
       db:
         condition: service_healthy
@@ -42,7 +42,7 @@ services:
     volumes:
       - /volume2/docker/guestbook/uploads:/app/uploads
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
       timeout: 10s
       retries: 3

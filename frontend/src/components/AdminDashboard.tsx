@@ -13,6 +13,7 @@ import ImageModal from './ImageModal';
 import SessionTimer from './SessionTimer';
 import SessionExtensionButton from './SessionExtensionButton';
 import ModerationPanel from './ModerationPanel';
+import AdminCommentsPanel from './AdminCommentsPanel';
 
 interface CreateAdminForm {
   username: string;
@@ -35,7 +36,7 @@ const AdminDashboard: React.FC = () => {
   // Session-Monitoring aktivieren (alle 3 Minuten)
   useSessionMonitor(3);
   
-  const [activeTab, setActiveTab] = useState<'reviews' | 'moderation' | 'admin' | 'export'>('moderation');
+  const [activeTab, setActiveTab] = useState<'reviews' | 'moderation' | 'comments' | 'admin' | 'export'>('moderation');
   const [reviewFilter, setReviewFilter] = useState<'all' | 'approved' | 'hidden'>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -463,6 +464,17 @@ const AdminDashboard: React.FC = () => {
           </button>
           
           <button
+            onClick={() => setActiveTab('comments')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'comments'
+                ? 'border-green-500 text-green-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Kommentare
+          </button>
+          
+          <button
             onClick={() => setActiveTab('admin')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'admin'
@@ -488,6 +500,7 @@ const AdminDashboard: React.FC = () => {
         {/* Tab Content */}
         {activeTab === 'moderation' && <ModerationPanel />}
         {activeTab === 'reviews' && renderReviewsTab()}
+        {activeTab === 'comments' && <AdminCommentsPanel />}
         {activeTab === 'admin' && renderAdminTab()}
         {activeTab === 'export' && renderExportTab()}
       </div>

@@ -253,6 +253,136 @@ class AdminUserCRUD:
         db.commit()
         return user
 
+# Comment CRUD
+class CommentCRUD:
+    
+    @staticmethod
+    def create_comment(db: Session, comment: schemas.CommentCreate, ip_address: Optional[str] = None, review_id: int = None) -> models.Comment:
+        """Neuen Kommentar erstellen"""
+        db_comment = models.Comment(
+            review_id=review_id,
+            name=comment.name,
+            email=comment.email,
+            content=comment.content,
+            ip_address=ip_address
+            # is_approved wird vom Modell-Default (False) gesetzt
+        )
+        db.add(db_comment)
+        db.commit()
+        db.refresh(db_comment)
+        return db_comment
+    
+    @staticmethod
+    def get_comment(db: Session, comment_id: int) -> Optional[models.Comment]:
+        """Einzelnen Kommentar abrufen"""
+        return db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+    
+    @staticmethod
+    def get_comments_by_review(
+        db: Session, 
+        review_id: int,
+        skip: int = 0, 
+        limit: int = 10,
+        approved_only: bool = True
+    ) -> tuple[List[models.Comment], int]:
+        """Kommentare für eine bestimmte Bewertung abrufen"""
+        query = db.query(models.Comment).filter(models.Comment.review_id == review_id)
+        
+        if approved_only:
+            query = query.filter(models.Comment.is_approved == True)
+        
+        total = query.count()
+        comments = query.order_by(desc(models.Comment.created_at)).offset(skip).limit(limit).all()
+        return comments, total
+    
+    @staticmethod
+    def get_comments(
+        db: Session,
+        skip: int = 0,
+        limit: int = 10,
+        approved_only: bool = True
+    ) -> tuple[List[models.Comment], int]:
+        """Alle Kommentare abrufen"""
+        query = db.query(models.Comment)
+        
+        if approved_only:
+            query = query.filter(models.Comment.is_approved == True)
+        
+        total = query.count()
+        comments = query.order_by(desc(models.Comment.created_at)).offset(skip).limit(limit).all()
+        return comments, total
+    
+    @staticmethod
+    def get_pending_comments(
+        db: Session,
+        skip: int = 0,
+        limit: int = 10
+    ) -> tuple[List[models.Comment], int]:
+        """Pending Kommentare für Admin abrufen"""
+        query = db.query(models.Comment).filter(models.Comment.is_approved == False)
+        total = query.count()
+        comments = query.order_by(desc(models.Comment.created_at)).offset(skip).limit(limit).all()
+        return comments, total
+    
+    @staticmethod
+    def update_comment(db: Session, comment_id: int, comment_update: schemas.CommentUpdate) -> Optional[models.Comment]:
+        """Kommentar aktualisieren"""
+        db_comment = CommentCRUD.get_comment(db, comment_id)
+        if not db_comment:
+            return None
+        
+        update_data = comment_update.dict(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(db_comment, field, value)
+        
+        db_comment.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(db_comment)
+        return db_comment
+    
+    @staticmethod
+    def approve_comment(db: Session, comment_id: int) -> Optional[models.Comment]:
+        """Kommentar genehmigen"""
+        db_comment = CommentCRUD.get_comment(db, comment_id)
+        if not db_comment:
+            return None
+        
+        db_comment.is_approved = True
+        db_comment.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(db_comment)
+        return db_comment
+    
+    @staticmethod
+    def reject_comment(db: Session, comment_id: int) -> Optional[models.Comment]:
+        """Kommentar ablehnen (löschen)"""
+        db_comment = CommentCRUD.get_comment(db, comment_id)
+        if not db_comment:
+            return None
+        
+        db.delete(db_comment)
+        db.commit()
+        return db_comment
+    
+    @staticmethod
+    def delete_comment(db: Session, comment_id: int) -> bool:
+        """Kommentar löschen"""
+        db_comment = CommentCRUD.get_comment(db, comment_id)
+        if not db_comment:
+            return False
+        
+        db.delete(db_comment)
+        db.commit()
+        return True
+    
+    @staticmethod
+    def count_approved_comments_by_review(db: Session, review_id: int) -> int:
+        """Anzahl genehmigter Kommentare für eine Bewertung"""
+        return db.query(models.Comment).filter(
+            and_(models.Comment.review_id == review_id, models.Comment.is_approved == True)
+        ).count()
+
 # Instanzen für Import
 review_crud = ReviewCRUD()
 admin_user_crud = AdminUserCRUD()
+comment_crud = CommentCRUD()

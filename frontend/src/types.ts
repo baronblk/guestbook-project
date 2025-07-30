@@ -13,6 +13,7 @@ export interface Review {
   updated_at?: string;
   is_approved: boolean;
   is_visible?: boolean;  // Alternative to is_approved
+  comment_count?: number;  // Anzahl genehmigter Kommentare
 }
 
 export interface AdminReview extends Review {

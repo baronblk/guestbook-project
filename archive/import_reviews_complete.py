@@ -8,7 +8,7 @@ from datetime import datetime
 import re
 
 # API base URL
-API_BASE_URL = "http://localhost:8080/api"
+API_BASE_URL = "http://localhost:8000/api"
 
 # Complete collection of reviews
 reviews_data = [

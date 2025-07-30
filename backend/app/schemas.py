@@ -37,6 +37,7 @@ class ReviewUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=200)
     content: Optional[str] = Field(None, min_length=10, max_length=5000)
     image_path: Optional[str] = None
+    created_at: Optional[datetime] = None
     is_approved: Optional[bool] = None
     is_featured: Optional[bool] = None
     admin_notes: Optional[str] = None
@@ -49,6 +50,7 @@ class ReviewResponse(ReviewBase):
     updated_at: Optional[datetime]
     is_approved: bool
     is_featured: bool
+    comment_count: Optional[int] = 0  # Anzahl genehmigter Kommentare
     
     class Config:
         from_attributes = True
@@ -64,6 +66,54 @@ class ReviewAdminResponse(ReviewResponse):
 class ReviewListResponse(BaseModel):
     """Paginierte Liste von Bewertungen"""
     reviews: List[ReviewResponse]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+# Comment Schemas
+class CommentBase(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100, description="Name des Kommentators")
+    email: Optional[EmailStr] = Field(None, description="Optional: E-Mail für Benachrichtigungen")
+    content: str = Field(..., min_length=5, max_length=2000, description="Kommentartext")
+    
+    @validator('content')
+    def validate_content(cls, v):
+        if len(v.strip()) < 5:
+            raise ValueError('Kommentar muss mindestens 5 Zeichen haben')
+        return v.strip()
+
+class CommentCreate(CommentBase):
+    """Schema für neuen Kommentar"""
+    pass
+
+class CommentUpdate(BaseModel):
+    """Schema für Kommentar-Updates (Admin)"""
+    name: Optional[str] = Field(None, min_length=2, max_length=100)
+    email: Optional[EmailStr] = None
+    content: Optional[str] = Field(None, min_length=5, max_length=2000)
+    is_approved: Optional[bool] = None
+    admin_notes: Optional[str] = None
+
+class CommentResponse(CommentBase):
+    """Schema für Kommentar-Response"""
+    id: int
+    review_id: int
+    created_at: datetime
+    updated_at: Optional[datetime]
+    is_approved: bool
+    
+    class Config:
+        from_attributes = True
+
+class CommentAdminResponse(CommentResponse):
+    """Erweiterte Response für Admin"""
+    admin_notes: Optional[str]
+    ip_address: Optional[str]
+
+class CommentListResponse(BaseModel):
+    """Paginierte Liste von Kommentaren"""
+    comments: List[CommentResponse]
     total: int
     page: int
     per_page: int
