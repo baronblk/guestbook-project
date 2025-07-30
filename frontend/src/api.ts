@@ -122,6 +122,11 @@ export const adminApi = {
     return response.data;
   },
 
+  async getCurrentUser(): Promise<AdminUser> {
+    const response: AxiosResponse<AdminUser> = await api.get('/api/admin/me');
+    return response.data;
+  },
+
   // Admin User Management
   async createAdmin(data: { username: string; email: string; password: string }): Promise<AdminUser> {
     const response: AxiosResponse<AdminUser> = await api.post('/api/admin/users', data);

@@ -405,6 +405,13 @@ async def admin_login(
         "expires_in": auth.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     }
 
+@app.get("/api/admin/me", response_model=schemas.AdminUserResponse)
+async def get_current_admin_user_info(
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user)
+):
+    """Aktuelle Benutzerinformationen mit Rollen-Details abrufen"""
+    return current_user
+
 @app.post("/api/admin/refresh", response_model=schemas.Token)
 async def admin_refresh_token(
     request: Request,
@@ -776,12 +783,30 @@ async def create_admin_user(
     current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
     db: Session = Depends(database.get_db)
 ):
-    """Neuen Admin-Benutzer erstellen (nur für Superuser)"""
-    if not current_user.is_superuser:
+    """Neuen Admin-Benutzer erstellen (Admin/Superuser)"""
+    from app.auth import RolePermissions
+
+    # Rollenbasierte Berechtigungsprüfung
+    if not RolePermissions.can_manage_users(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Nur Superuser können Admin-Benutzer erstellen"
+            detail="Keine Berechtigung zur Benutzerverwaltung"
         )
+
+    # Nur Superuser können Superuser erstellen
+    if user_data.role == models.AdminRole.SUPERUSER and not RolePermissions.can_create_superusers(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Nur Superuser können Superuser-Benutzer erstellen"
+        )
+
+    # Admins können keine höheren oder gleichen Rollen erstellen
+    if current_user.role == models.AdminRole.ADMIN:
+        if user_data.role in [models.AdminRole.ADMIN, models.AdminRole.SUPERUSER]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admins können nur Moderatoren erstellen"
+            )
 
     # Prüfen ob Username bereits existiert
     existing_user = crud.admin_user_crud.get_admin_user_by_username(db, user_data.username)
@@ -808,7 +833,16 @@ async def get_admin_users(
     current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
     db: Session = Depends(database.get_db)
 ):
-    """Alle Admin-Benutzer abrufen"""
+    """Alle Admin-Benutzer abrufen (Admin/Superuser)"""
+    from app.auth import RolePermissions
+
+    # Rollenbasierte Berechtigungsprüfung
+    if not RolePermissions.can_manage_users(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Keine Berechtigung zur Benutzerverwaltung"
+        )
+
     skip = (page - 1) * per_page
     users = crud.admin_user_crud.get_all_admin_users(db, skip=skip, limit=per_page)
     total_users = db.query(models.AdminUser).count()
@@ -842,22 +876,68 @@ async def update_admin_user(
     db: Session = Depends(database.get_db)
 ):
     """Admin-Benutzer aktualisieren"""
+    from app.auth import RolePermissions
+
     # Prüfen ob User existiert
     target_user = crud.admin_user_crud.get_admin_user(db, user_id)
     if not target_user:
         raise HTTPException(status_code=404, detail="Admin-Benutzer nicht gefunden")
 
-    # Berechtigung prüfen: Nur Superuser oder der User selbst
-    if not current_user.is_superuser and current_user.id != user_id:
+    # Berechtigung prüfen: Admin/Superuser für andere User oder User selbst
+    is_self_update = current_user.id == user_id
+    can_manage = RolePermissions.can_manage_users(current_user)
+
+    if not (is_self_update or can_manage):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Keine Berechtigung"
         )
 
-    # Superuser-Status-Änderungen handhaben
+    # Rollenänderungen handhaben
+    if user_update.role is not None and user_update.role != target_user.role:
+        # Nur Admins/Superuser können Rollen ändern
+        if not can_manage:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Keine Berechtigung zur Rollenänderung"
+            )
+
+        # Admins können keine höheren oder gleichen Rollen vergeben
+        if current_user.role == models.AdminRole.ADMIN:
+            if user_update.role in [models.AdminRole.ADMIN, models.AdminRole.SUPERUSER]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Admins können nur Moderator-Rollen vergeben"
+                )
+
+        # Nur Superuser können Superuser-Rollen vergeben/entziehen
+        if user_update.role == models.AdminRole.SUPERUSER and not RolePermissions.can_create_superusers(current_user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Nur Superuser können Superuser-Rollen vergeben"
+            )
+
+        # Verhindere, dass sich der letzte Superuser selbst degradiert
+        if (current_user.id == user_id and
+            target_user.role == models.AdminRole.SUPERUSER and
+            user_update.role != models.AdminRole.SUPERUSER):
+
+            other_superusers = db.query(models.AdminUser).filter(
+                models.AdminUser.id != user_id,
+                models.AdminUser.role == models.AdminRole.SUPERUSER,
+                models.AdminUser.is_active == True
+            ).count()
+
+            if other_superusers == 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Sie können sich nicht selbst degradieren, da Sie der einzige aktive Superuser sind"
+                )
+
+    # Legacy Superuser-Status-Änderungen handhaben (Rückwärtskompatibilität)
     if user_update.is_superuser is not None:
         # Nur Superuser können Superuser-Status ändern
-        if not current_user.is_superuser:
+        if not RolePermissions.can_create_superusers(current_user):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Nur Superuser können Superuser-Status ändern"
@@ -906,7 +986,9 @@ async def delete_admin_user(
     db: Session = Depends(database.get_db)
 ):
     """Admin-Benutzer löschen (nur für Superuser)"""
-    if not current_user.is_superuser:
+    from app.auth import RolePermissions
+
+    if not RolePermissions.can_create_superusers(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Nur Superuser können Admin-Benutzer löschen"
@@ -937,7 +1019,9 @@ async def deactivate_admin_user(
     db: Session = Depends(database.get_db)
 ):
     """Admin-Benutzer deaktivieren (nur für Superuser)"""
-    if not current_user.is_superuser:
+    from app.auth import RolePermissions
+
+    if not RolePermissions.can_create_superusers(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Nur Superuser können Admin-Benutzer deaktivieren"
@@ -962,7 +1046,9 @@ async def activate_admin_user(
     db: Session = Depends(database.get_db)
 ):
     """Admin-Benutzer aktivieren (nur für Superuser)"""
-    if not current_user.is_superuser:
+    from app.auth import RolePermissions
+
+    if not RolePermissions.can_create_superusers(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Nur Superuser können Admin-Benutzer aktivieren"

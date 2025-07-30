@@ -27,6 +27,16 @@ def create_admin_user():
         admin_email = os.getenv("ADMIN_EMAIL", "admin@guestbook.local")
         admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
         admin_is_superuser = os.getenv("ADMIN_IS_SUPERUSER", "true").lower() == "true"
+        admin_role_str = os.getenv("ADMIN_ROLE", "superuser" if admin_is_superuser else "moderator")
+
+        # Role mapping
+        from app.models import AdminRole
+        role_mapping = {
+            "moderator": AdminRole.MODERATOR,
+            "admin": AdminRole.ADMIN,
+            "superuser": AdminRole.SUPERUSER
+        }
+        admin_role = role_mapping.get(admin_role_str.lower(), AdminRole.SUPERUSER if admin_is_superuser else AdminRole.MODERATOR)
 
         # Prüfen ob bereits Admin-Benutzer existiert
         existing_admin = db.query(AdminUser).filter(AdminUser.username == admin_username).first()
@@ -49,8 +59,17 @@ def create_admin_user():
                 updated = True
                 print(f"📧 E-Mail aktualisiert: {admin_email}")
 
-            if existing_admin.is_superuser != admin_is_superuser:
+            # Role und Superuser-Status aktualisieren
+            if existing_admin.role != admin_role:
+                existing_admin.role = admin_role
+                existing_admin.is_superuser = (admin_role == AdminRole.SUPERUSER)  # Sync für backwards compatibility
+                updated = True
+                print(f"👑 Rolle aktualisiert: {admin_role.value}")
+            elif existing_admin.is_superuser != admin_is_superuser:
                 existing_admin.is_superuser = admin_is_superuser
+                # Update role if needed
+                if admin_is_superuser and existing_admin.role != AdminRole.SUPERUSER:
+                    existing_admin.role = AdminRole.SUPERUSER
                 updated = True
                 status = "aktiviert" if admin_is_superuser else "deaktiviert"
                 print(f"👑 Superuser-Status {status}")
@@ -71,18 +90,18 @@ def create_admin_user():
         admin_data = AdminUserCreate(
             username=admin_username,
             email=admin_email,
-            password=admin_password
+            password=admin_password,
+            role=admin_role
         )
 
         admin_user = admin_user_crud.create_admin_user(db, admin_data)
-        admin_user.is_superuser = admin_is_superuser
         admin_user.is_active = True
         db.commit()
 
-        superuser_status = "mit Superuser-Rechten" if admin_is_superuser else "ohne Superuser-Rechte"
-        print(f"✅ Admin-Benutzer '{admin_user.username}' erfolgreich erstellt {superuser_status}!")
+        print(f"✅ Admin-Benutzer '{admin_user.username}' erfolgreich erstellt!")
         print(f"📧 E-Mail: {admin_user.email}")
-        print(f"👑 Superuser: {'Ja' if admin_is_superuser else 'Nein'}")
+        print(f"👑 Rolle: {admin_user.role.value}")
+        print(f"🔧 Superuser: {'Ja' if admin_user.is_superuser else 'Nein'}")
         print("⚠️  Bitte Passwort nach dem ersten Login ändern!")
 
     except Exception as e:

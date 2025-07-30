@@ -60,14 +60,25 @@ export interface UpdateReviewForm {
 }
 
 // Auth Types
+export enum AdminRole {
+  MODERATOR = 'moderator',
+  ADMIN = 'admin',
+  SUPERUSER = 'superuser'
+}
+
 export interface AdminUser {
   id: number;
   username: string;
   email: string;
   is_active: boolean;
   is_superuser: boolean;
+  role: AdminRole;
   created_at: string;
   last_login?: string;
+  // Role-based permission helpers
+  can_moderate?: boolean;
+  can_manage_users?: boolean;
+  can_create_superusers?: boolean;
 }
 
 export interface Token {
@@ -257,6 +268,16 @@ export interface AdminUserUpdate {
   password?: string;
   is_active?: boolean;
   is_superuser?: boolean;
+  role?: AdminRole;
+}
+
+export interface AdminUserCreate {
+  username: string;
+  email: string;
+  password: string;
+  is_active?: boolean;
+  is_superuser?: boolean;
+  role: AdminRole;
 }
 
 export interface AdminUserListResponse {

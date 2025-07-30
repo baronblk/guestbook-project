@@ -22,19 +22,32 @@ export const useAuthStore = create<AuthStore>()(
             localStorage.setItem('refresh_token', tokenResponse.refresh_token);
           }
 
-          set({
-            token: tokenResponse.access_token,
-            user: {
-              username: credentials.username,
-              // Mock user data - in real app, fetch user details
-              id: 1,
-              email: '',
-              is_active: true,
-              is_superuser: true,
-              created_at: new Date().toISOString()
-            } as AdminUser,
-            loading: false,
-          });
+          // Fetch complete user information with role
+          try {
+            const userInfo = await adminApi.getCurrentUser();
+            set({
+              token: tokenResponse.access_token,
+              user: userInfo,
+              loading: false,
+              error: null
+            });
+          } catch (userError) {
+            // Fallback to minimal user data if user info fetch fails
+            set({
+              token: tokenResponse.access_token,
+              user: {
+                username: credentials.username,
+                id: 1,
+                email: '',
+                is_active: true,
+                is_superuser: false,
+                role: 'moderator' as any,
+                created_at: new Date().toISOString()
+              } as AdminUser,
+              loading: false,
+              error: null
+            });
+          }
 
           return true;
         } catch (error) {
@@ -60,18 +73,11 @@ export const useAuthStore = create<AuthStore>()(
         const token = localStorage.getItem('admin_token');
         if (token) {
           try {
-            // Validierung durch einen API-Call zum Backend
-            await adminApi.getReviews({ page: 1, per_page: 1 });
+            // Fetch user information with role data
+            const userInfo = await adminApi.getCurrentUser();
             set({
               token,
-              user: {
-                id: 1,
-                username: 'admin',
-                email: 'admin@guestbook.local',
-                is_active: true,
-                is_superuser: true,
-                created_at: new Date().toISOString()
-              }
+              user: userInfo
             });
           } catch (error: any) {
             // Token ist ungültig oder Session abgelaufen

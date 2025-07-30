@@ -1,10 +1,17 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Float, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, Float, Boolean, ForeignKey, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from datetime import datetime
+from enum import Enum as PyEnum
 
 Base = declarative_base()
+
+class AdminRole(str, PyEnum):
+    """Admin-Rollen"""
+    MODERATOR = "moderator"
+    ADMIN = "admin"
+    SUPERUSER = "superuser"
 
 class Review(Base):
     """Gästebuch-Bewertung Model"""
@@ -49,13 +56,34 @@ class AdminUser(Base):
     email = Column(String(255), unique=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
-    is_superuser = Column(Boolean, default=False, nullable=False)
+    is_superuser = Column(Boolean, default=False, nullable=False)  # Backwards compatibility
+    role = Column(Enum(AdminRole), default=AdminRole.MODERATOR, nullable=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_login = Column(DateTime(timezone=True), nullable=True)
 
     def __repr__(self):
-        return f"<AdminUser(id={self.id}, username='{self.username}')>"
+        return f"<AdminUser(id={self.id}, username='{self.username}', role='{self.role}')>"
+
+    @property
+    def can_manage_users(self) -> bool:
+        """Kann Benutzer verwalten (Admin oder Superuser)"""
+        return self.role in [AdminRole.ADMIN, AdminRole.SUPERUSER]
+
+    @property
+    def can_create_superusers(self) -> bool:
+        """Kann Superuser erstellen (nur Superuser)"""
+        return self.role == AdminRole.SUPERUSER
+
+    @property
+    def can_moderate(self) -> bool:
+        """Kann moderieren (alle Rollen)"""
+        return True
+
+    @property
+    def can_import_export(self) -> bool:
+        """Kann Import/Export (alle Rollen)"""
+        return True
 
 
 class Comment(Base):

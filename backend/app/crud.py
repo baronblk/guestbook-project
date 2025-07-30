@@ -367,11 +367,19 @@ class AdminUserCRUD:
     @staticmethod
     def create_admin_user(db: Session, user: schemas.AdminUserCreate) -> models.AdminUser:
         """Admin-Benutzer erstellen"""
-        hashed_password = get_password_hash(user.password)
+        from app.auth import SecurityUtils
+        hashed_password = SecurityUtils.hash_password(user.password)
+
+        # Role mapping für backwards compatibility
+        role = user.role if hasattr(user, 'role') else models.AdminRole.MODERATOR
+        is_superuser = (role == models.AdminRole.SUPERUSER)
+
         db_user = models.AdminUser(
             username=user.username,
             email=user.email,
-            hashed_password=hashed_password
+            hashed_password=hashed_password,
+            role=role,
+            is_superuser=is_superuser  # Backwards compatibility
         )
         db.add(db_user)
         db.commit()
@@ -417,7 +425,18 @@ class AdminUserCRUD:
 
         # Password hashen, falls es geändert wird
         if "password" in update_data:
-            update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
+            from app.auth import SecurityUtils
+            update_data["hashed_password"] = SecurityUtils.hash_password(update_data.pop("password"))
+
+        # Role synchronization für backwards compatibility
+        if "role" in update_data:
+            role = update_data["role"]
+            update_data["is_superuser"] = (role == models.AdminRole.SUPERUSER)
+        elif "is_superuser" in update_data:
+            # Backwards compatibility: is_superuser -> role mapping
+            if update_data["is_superuser"]:
+                update_data["role"] = models.AdminRole.SUPERUSER
+            # Note: Wir ändern die Rolle nicht automatisch von ADMIN zu MODERATOR
 
         for field, value in update_data.items():
             setattr(db_user, field, value)

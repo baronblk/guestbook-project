@@ -3,14 +3,16 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { adminApi } from '../api';
 import { useAuthStore } from '../store/authStore';
-import { AdminUser, AdminUserUpdate, PasswordChangeRequest } from '../types';
+import { AdminRole, AdminUser, AdminUserUpdate, PasswordChangeRequest } from '../types';
 import Pagination from './Pagination';
+import { useRolePermissions } from './RoleGuard';
 
 interface AdminEditForm {
   username: string;
   email: string;
   is_active: boolean;
   is_superuser: boolean;
+  role: AdminRole;
 }
 
 interface PasswordChangeForm {
@@ -21,6 +23,7 @@ interface PasswordChangeForm {
 
 const AdminUserManagement: React.FC = () => {
   const { user: currentUser } = useAuthStore();
+  const permissions = useRolePermissions(currentUser);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
@@ -75,7 +78,8 @@ const AdminUserManagement: React.FC = () => {
       username: user.username,
       email: user.email,
       is_active: user.is_active,
-      is_superuser: user.is_superuser
+      is_superuser: user.is_superuser,
+      role: user.role || AdminRole.MODERATOR // fallback to moderator if no role set
     });
     setShowEditModal(true);
   };
@@ -88,7 +92,8 @@ const AdminUserManagement: React.FC = () => {
         username: data.username !== selectedUser.username ? data.username : undefined,
         email: data.email !== selectedUser.email ? data.email : undefined,
         is_active: data.is_active !== selectedUser.is_active ? data.is_active : undefined,
-        is_superuser: data.is_superuser !== selectedUser.is_superuser ? data.is_superuser : undefined
+        is_superuser: data.is_superuser !== selectedUser.is_superuser ? data.is_superuser : undefined,
+        role: data.role !== selectedUser.role ? data.role : undefined
       };
 
       await adminApi.updateAdminUser(selectedUser.id, updateData);
@@ -255,12 +260,32 @@ const AdminUserManagement: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="space-y-1">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          Admin
-                        </span>
-                        {user.is_superuser && (
+                        {/* New Role System */}
+                        {user.role && (
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            user.role === AdminRole.SUPERUSER
+                              ? 'bg-purple-100 text-purple-800'
+                              : user.role === AdminRole.ADMIN
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {user.role === AdminRole.SUPERUSER && '👑 Super Admin'}
+                            {user.role === AdminRole.ADMIN && '🛡️ Administrator'}
+                            {user.role === AdminRole.MODERATOR && '🔍 Moderator'}
+                          </span>
+                        )}
+
+                        {/* Legacy Superuser Badge (for backwards compatibility) */}
+                        {user.is_superuser && !user.role && (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                            Superuser
+                            👑 Superuser (Legacy)
+                          </span>
+                        )}
+
+                        {/* Fallback for users without role */}
+                        {!user.role && !user.is_superuser && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            👤 Admin
                           </span>
                         )}
                       </div>
@@ -381,7 +406,30 @@ const AdminUserManagement: React.FC = () => {
                   </label>
                 </div>
 
-                {currentUser?.is_superuser && (
+                {/* Role Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Rolle
+                  </label>
+                  <select
+                    {...registerEdit('role', { required: 'Rolle ist erforderlich' })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value={AdminRole.MODERATOR}>Moderator</option>
+                    {permissions.canManageUsers() && (
+                      <option value={AdminRole.ADMIN}>Administrator</option>
+                    )}
+                    {permissions.canCreateSuperusers() && (
+                      <option value={AdminRole.SUPERUSER}>Super Admin</option>
+                    )}
+                  </select>
+                  {editErrors.role && (
+                    <p className="mt-1 text-sm text-red-600">{editErrors.role.message}</p>
+                  )}
+                </div>
+
+                {/* Legacy Superuser checkbox - for backwards compatibility */}
+                {permissions.canCreateSuperusers() && (
                   <div className="flex items-center">
                     <input
                       {...registerEdit('is_superuser')}
@@ -389,7 +437,7 @@ const AdminUserManagement: React.FC = () => {
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <label className="ml-2 block text-sm text-gray-900">
-                      Superuser
+                      Superuser (Legacy)
                     </label>
                   </div>
                 )}

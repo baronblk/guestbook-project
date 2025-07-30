@@ -324,3 +324,53 @@ def get_current_active_admin_user(
             detail="Inactive user"
         )
     return current_user
+
+# Role-based Authorization
+class RolePermissions:
+    """Rollen-basierte Berechtigungen"""
+
+    @staticmethod
+    def require_role(*allowed_roles):
+        """Decorator für rollenbasierte Zugriffskontrolle"""
+        def decorator(func):
+            def wrapper(current_user = Depends(get_current_active_admin_user), *args, **kwargs):
+                from app.models import AdminRole
+
+                # Convert string roles to enum
+                role_enums = []
+                for role in allowed_roles:
+                    if isinstance(role, str):
+                        role_enums.append(AdminRole(role))
+                    else:
+                        role_enums.append(role)
+
+                if current_user.role not in role_enums:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Insufficient permissions for this operation"
+                    )
+                return func(current_user=current_user, *args, **kwargs)
+            return wrapper
+        return decorator
+
+    @staticmethod
+    def can_manage_users(user) -> bool:
+        """Kann Benutzer verwalten"""
+        from app.models import AdminRole
+        return user.role in [AdminRole.ADMIN, AdminRole.SUPERUSER]
+
+    @staticmethod
+    def can_create_superusers(user) -> bool:
+        """Kann Superuser erstellen"""
+        from app.models import AdminRole
+        return user.role == AdminRole.SUPERUSER
+
+    @staticmethod
+    def can_moderate(user) -> bool:
+        """Kann moderieren"""
+        return True  # Alle Rollen können moderieren
+
+    @staticmethod
+    def can_import_export(user) -> bool:
+        """Kann Import/Export"""
+        return True  # Alle Rollen können Import/Export

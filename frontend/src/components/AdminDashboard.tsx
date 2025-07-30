@@ -6,13 +6,15 @@ import { adminApi } from '../api';
 import { useSessionMonitor } from '../hooks/useSessionMonitor';
 import { useAuthStore } from '../store/authStore';
 import { useReviewStore } from '../store/reviewStore';
-import { FullImportData } from '../types';
+import { AdminRole, FullImportData } from '../types';
 import AdminCommentsPanel from './AdminCommentsPanel';
 import AdminUserManagement from './AdminUserManagement';
 import ImageModal from './ImageModal';
 import ModerationPanel from './ModerationPanel';
 import Pagination from './Pagination';
 import RatingStars from './RatingStars';
+import RoleBasedNavigation from './RoleBasedNavigation';
+import RoleGuard, { useRolePermissions } from './RoleGuard';
 import SessionExtensionButton from './SessionExtensionButton';
 import SessionTimer from './SessionTimer';
 
@@ -34,10 +36,14 @@ const AdminDashboard: React.FC = () => {
     toggleReviewVisibility
   } = useReviewStore();
 
+  // Role-based permissions
+  const permissions = useRolePermissions(user);
+
   // Session-Monitoring aktivieren (alle 3 Minuten)
   useSessionMonitor(3);
 
-  const [activeTab, setActiveTab] = useState<'reviews' | 'moderation' | 'comments' | 'admin' | 'export'>('moderation');
+  // Updated tab system for role-based access
+  const [activeTab, setActiveTab] = useState<string>('moderation');
   const [adminSubTab, setAdminSubTab] = useState<'create' | 'manage'>('manage');
   const [reviewFilter, setReviewFilter] = useState<'all' | 'approved' | 'hidden'>('all');
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +51,24 @@ const AdminDashboard: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalReviews, setTotalReviews] = useState(0);
   const [modalImage, setModalImage] = useState<string | null>(null);
+
+  // Redirect if user not authenticated
+  useEffect(() => {
+    if (!user) {
+      navigate('/admin/login');
+    }
+  }, [user, navigate]);
+
+  // Set default tab based on user role
+  useEffect(() => {
+    if (user && activeTab === 'moderation') {
+      if (permissions.canModerate()) {
+        setActiveTab('moderation');
+      } else {
+        setActiveTab('reviews'); // fallback
+      }
+    }
+  }, [user, permissions, activeTab]);
 
   const {
     register: registerAdmin,
@@ -510,6 +534,10 @@ const AdminDashboard: React.FC = () => {
     </div>
   );
 
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -521,10 +549,6 @@ const AdminDashboard: React.FC = () => {
             </h1>
 
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Willkommen, {user?.username}
-              </span>
-
               {/* Session Timer */}
               <SessionTimer className="hidden sm:flex" />
 
@@ -559,71 +583,63 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Role-based Navigation */}
+      <RoleBasedNavigation
+        user={user}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <nav className="flex space-x-8 mb-8">
-          <button
-            onClick={() => setActiveTab('moderation')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'moderation'
-                ? 'border-orange-500 text-orange-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Moderation
-          </button>
+        {/* Tab Content with Role-based Access Control */}
+        {activeTab === 'moderation' && (
+          <RoleGuard user={user} requiredRoles={[AdminRole.MODERATOR, AdminRole.ADMIN, AdminRole.SUPERUSER]}>
+            <ModerationPanel />
+          </RoleGuard>
+        )}
 
-          <button
-            onClick={() => setActiveTab('reviews')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'reviews'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Alle Bewertungen
-          </button>
+        {activeTab === 'reviews' && (
+          <RoleGuard user={user} requiredRoles={[AdminRole.MODERATOR, AdminRole.ADMIN, AdminRole.SUPERUSER]}>
+            {renderReviewsTab()}
+          </RoleGuard>
+        )}
 
-          <button
-            onClick={() => setActiveTab('comments')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'comments'
-                ? 'border-green-500 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Kommentare
-          </button>
+        {activeTab === 'comments' && (
+          <RoleGuard user={user} requiredRoles={[AdminRole.MODERATOR, AdminRole.ADMIN, AdminRole.SUPERUSER]}>
+            <AdminCommentsPanel />
+          </RoleGuard>
+        )}
 
-          <button
-            onClick={() => setActiveTab('admin')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'admin'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Admin-Verwaltung
-          </button>
+        {activeTab === 'import-export' && (
+          <RoleGuard user={user} requiredRoles={[AdminRole.MODERATOR, AdminRole.ADMIN, AdminRole.SUPERUSER]}>
+            {renderExportTab()}
+          </RoleGuard>
+        )}
 
-          <button
-            onClick={() => setActiveTab('export')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'export'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Import/Export
-          </button>
-        </nav>
+        {activeTab === 'admin-management' && (
+          <RoleGuard user={user} requiredRoles={[AdminRole.ADMIN, AdminRole.SUPERUSER]}>
+            {renderAdminTab()}
+          </RoleGuard>
+        )}
 
-        {/* Tab Content */}
-        {activeTab === 'moderation' && <ModerationPanel />}
-        {activeTab === 'reviews' && renderReviewsTab()}
-        {activeTab === 'comments' && <AdminCommentsPanel />}
-        {activeTab === 'admin' && renderAdminTab()}
-        {activeTab === 'export' && renderExportTab()}
+        {activeTab === 'security' && (
+          <RoleGuard user={user} requiredRoles={[AdminRole.SUPERUSER]}>
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-4">Sicherheitseinstellungen</h2>
+              <p className="text-gray-600">Sicherheitsfunktionen werden hier implementiert...</p>
+            </div>
+          </RoleGuard>
+        )}
+
+        {activeTab === 'system' && (
+          <RoleGuard user={user} requiredRoles={[AdminRole.SUPERUSER]}>
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-4">Systemkonfiguration</h2>
+              <p className="text-gray-600">System-Einstellungen werden hier implementiert...</p>
+            </div>
+          </RoleGuard>
+        )}
       </div>
 
       {/* Image Modal */}

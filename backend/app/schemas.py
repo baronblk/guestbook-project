@@ -1,7 +1,13 @@
 from pydantic import BaseModel, Field, EmailStr, validator
 from typing import Optional, List, Union
 from datetime import datetime
-from enum import IntEnum
+from enum import IntEnum, Enum
+
+class AdminRoleEnum(str, Enum):
+    """Admin-Rollen"""
+    MODERATOR = "moderator"
+    ADMIN = "admin"
+    SUPERUSER = "superuser"
 
 class RatingEnum(IntEnum):
     """Bewertungs-Sterne (1-5)"""
@@ -140,6 +146,7 @@ class AdminUserBase(BaseModel):
 
 class AdminUserCreate(AdminUserBase):
     password: str = Field(..., min_length=8)
+    role: AdminRoleEnum = Field(default=AdminRoleEnum.MODERATOR)
 
 class AdminUserUpdate(BaseModel):
     """Schema für Admin-Benutzer Updates"""
@@ -147,12 +154,14 @@ class AdminUserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     password: Optional[str] = Field(None, min_length=8)
     is_active: Optional[bool] = None
-    is_superuser: Optional[bool] = None
+    is_superuser: Optional[bool] = None  # Backwards compatibility
+    role: Optional[AdminRoleEnum] = None
 
 class AdminUserResponse(AdminUserBase):
     id: int
     is_active: bool
-    is_superuser: bool
+    is_superuser: bool  # Backwards compatibility
+    role: AdminRoleEnum
     created_at: datetime
     last_login: Optional[datetime]
 
