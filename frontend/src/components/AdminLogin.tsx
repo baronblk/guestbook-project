@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
 interface LoginForm {
@@ -14,7 +14,7 @@ const AdminLogin: React.FC = () => {
   const [sessionExpired, setSessionExpired] = useState(false);
   const { login, token } = useAuthStore();
   const navigate = useNavigate();
-  
+
   const {
     register,
     handleSubmit,
@@ -27,9 +27,17 @@ const AdminLogin: React.FC = () => {
     if (expired === 'true') {
       setSessionExpired(true);
       localStorage.removeItem('session_expired');
-      toast.error('Ihre Session ist abgelaufen. Bitte melden Sie sich erneut an.');
     }
   }, []);
+
+  // Show session expired toast only once
+  useEffect(() => {
+    if (sessionExpired) {
+      toast.error('Ihre Session ist abgelaufen. Bitte melden Sie sich erneut an.', {
+        id: 'session-expired', // Prevent duplicate toasts
+      });
+    }
+  }, [sessionExpired]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -86,7 +94,7 @@ const AdminLogin: React.FC = () => {
             </div>
           </div>
         )}
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -105,7 +113,7 @@ const AdminLogin: React.FC = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>
               )}
             </div>
-            
+
             <div>
               <label htmlFor="password" className="sr-only">
                 Passwort

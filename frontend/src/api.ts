@@ -4,6 +4,7 @@ import {
     AdminUser,
     CreateReviewForm,
     LoginForm,
+    RefreshToken,
     Review,
     ReviewListResponse,
     ReviewStats,
@@ -40,16 +41,16 @@ api.interceptors.response.use(
     if (error.response?.status === 401 || error.response?.status === 403) {
       // Session abgelaufen oder nicht authentifiziert
       localStorage.removeItem('admin_token');
+      localStorage.removeItem('refresh_token');
 
       // Prüfen ob wir uns im Admin-Bereich befinden
       if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
-        // Session-Ablauf-Nachricht in localStorage speichern
+        // Session-Ablauf-Flag setzen für Session-Manager
         localStorage.setItem('session_expired', 'true');
 
-        // Sofortige Weiterleitung zur Login-Seite
-        setTimeout(() => {
-          window.location.href = '/admin/login';
-        }, 100);
+        // Event auslösen für React-komponenten
+        const sessionExpiredEvent = new CustomEvent('session-expired');
+        window.dispatchEvent(sessionExpiredEvent);
       }
     }
     return Promise.reject(error);
@@ -111,8 +112,8 @@ export const adminApi = {
     return response.data;
   },
 
-  async refreshToken(): Promise<Token> {
-    const response: AxiosResponse<Token> = await api.post('/api/admin/refresh');
+  async refreshToken(refreshData: RefreshToken): Promise<Token> {
+    const response: AxiosResponse<Token> = await api.post('/api/admin/refresh', refreshData);
     return response.data;
   },
 

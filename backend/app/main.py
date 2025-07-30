@@ -440,12 +440,18 @@ async def admin_refresh_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
 
+    # Neuen Refresh Token erstellen
+    new_refresh_token = auth.AuthManager.create_refresh_token(
+        data={"sub": user.username}
+    )
+
     # Login-Zeit aktualisieren
     user.last_login = datetime.utcnow()
     db.commit()
 
     return {
         "access_token": access_token,
+        "refresh_token": new_refresh_token,
         "token_type": "bearer",
         "expires_in": auth.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     }

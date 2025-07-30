@@ -16,8 +16,11 @@ export const useAuthStore = create<AuthStore>()(
         try {
           const tokenResponse = await adminApi.login(credentials);
 
-          // Store token
+          // Store tokens
           localStorage.setItem('admin_token', tokenResponse.access_token);
+          if (tokenResponse.refresh_token) {
+            localStorage.setItem('refresh_token', tokenResponse.refresh_token);
+          }
 
           set({
             token: tokenResponse.access_token,
@@ -45,6 +48,7 @@ export const useAuthStore = create<AuthStore>()(
 
       logout: () => {
         localStorage.removeItem('admin_token');
+        localStorage.removeItem('refresh_token');
         set({
           user: null,
           token: null,
@@ -73,6 +77,7 @@ export const useAuthStore = create<AuthStore>()(
             // Token ist ungültig oder Session abgelaufen
             if (error.response?.status === 401 || error.response?.status === 403) {
               localStorage.removeItem('admin_token');
+              localStorage.removeItem('refresh_token');
               set({ token: null, user: null });
             }
           }
@@ -99,13 +104,18 @@ export const useAuthStore = create<AuthStore>()(
       // Session verlängern/refreshen
       refreshSession: async () => {
         const currentToken = get().token;
-        if (!currentToken) return false;
+        const refreshToken = localStorage.getItem('refresh_token');
+
+        if (!currentToken || !refreshToken) return false;
 
         try {
-          const tokenResponse = await adminApi.refreshToken();
+          const tokenResponse = await adminApi.refreshToken({ refresh_token: refreshToken });
 
-          // Store new token
+          // Store new token (falls neuer refresh_token gesendet wird)
           localStorage.setItem('admin_token', tokenResponse.access_token);
+          if (tokenResponse.refresh_token) {
+            localStorage.setItem('refresh_token', tokenResponse.refresh_token);
+          }
 
           set({
             token: tokenResponse.access_token,
