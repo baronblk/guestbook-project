@@ -22,7 +22,7 @@ services:
     - guestbook-network
 
   app:
-    image: ghcr.io/baronblk/guestbook-project/combined:latest
+    image: ghcr.io/baronblk/guestbook-project/combined:2.0.0
     restart: unless-stopped
     platform: linux/amd64
     ports:

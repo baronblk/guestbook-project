@@ -30,7 +30,7 @@ services:
     - "com.centurylinklabs.watchtower.enable=false" # DB nicht automatisch updaten
 
   app:
-    image: ghcr.io/baronblk/guestbook-project/combined:latest
+    image: ghcr.io/baronblk/guestbook-project/combined:2.0.0
     restart: unless-stopped
     platform: linux/amd64
     ports:
