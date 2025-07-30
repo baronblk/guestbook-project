@@ -175,6 +175,75 @@ class ImportRequest(BaseModel):
     reviews: List[ImportReview]
     source: str = "manual"
 
+# Erweiterte Export/Import Schemas für vollständige Datenwiederherstellung
+class ExportComment(BaseModel):
+    """Schema für Kommentar-Export"""
+    id: int
+    name: str
+    email: Optional[str] = None
+    content: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    is_approved: bool
+    admin_notes: Optional[str] = None
+    ip_address: Optional[str] = None
+
+class ExportReview(BaseModel):
+    """Schema für Review-Export mit Kommentaren"""
+    id: int
+    name: str
+    email: Optional[str] = None
+    rating: int
+    title: Optional[str] = None
+    content: str
+    image_path: Optional[str] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    is_approved: bool
+    is_featured: bool
+    admin_notes: Optional[str] = None
+    import_source: Optional[str] = None
+    external_id: Optional[str] = None
+    ip_address: Optional[str] = None
+    comments: List[ExportComment] = []
+
+class FullExportData(BaseModel):
+    """Schema für vollständigen Datenexport"""
+    exported_at: datetime
+    export_version: str = "2.0"
+    total_reviews: int
+    total_comments: int
+    reviews: List[ExportReview]
+
+class ImportComment(BaseModel):
+    """Schema für Kommentar-Import"""
+    name: str
+    email: Optional[str] = None
+    content: str
+    created_at: Optional[datetime] = None
+    is_approved: bool = True
+    admin_notes: Optional[str] = None
+
+class ImportReviewWithComments(BaseModel):
+    """Schema für Review-Import mit Kommentaren"""
+    name: str
+    email: Optional[str] = None
+    rating: int = Field(..., ge=1, le=5)
+    title: Optional[str] = None
+    content: str
+    created_at: Optional[datetime] = None
+    is_approved: bool = True
+    is_featured: bool = False
+    admin_notes: Optional[str] = None
+    import_source: str = "restore"
+    external_id: Optional[str] = None
+    comments: List[ImportComment] = []
+
+class FullImportData(BaseModel):
+    """Schema für vollständigen Datenimport"""
+    export_version: Optional[str] = "2.0"
+    reviews: List[ImportReviewWithComments]
+
 # Filter/Sort Schemas
 class ReviewFilters(BaseModel):
     """Filter-Parameter für Bewertungen"""

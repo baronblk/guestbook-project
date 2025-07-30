@@ -3,6 +3,9 @@ import {
     AdminReview,
     AdminUser,
     CreateReviewForm,
+    FullExportData,
+    FullImportData,
+    ImportResult,
     LoginForm,
     RefreshToken,
     Review,
@@ -186,6 +189,20 @@ export const adminApi = {
   async exportReviews(): Promise<Blob> {
     const response = await api.get('/api/admin/export', {
       responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  // Vollständiger Export mit Kommentaren
+  async exportFullData(): Promise<FullExportData> {
+    const response: AxiosResponse<FullExportData> = await api.get('/api/admin/export/full');
+    return response.data;
+  },
+
+  // Vollständiger Import mit Kommentaren
+  async importFullData(importData: FullImportData, replaceExisting: boolean = false): Promise<ImportResult> {
+    const response: AxiosResponse<ImportResult> = await api.post('/api/admin/import/full', importData, {
+      params: { replace_existing: replaceExisting }
     });
     return response.data;
   },

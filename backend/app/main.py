@@ -597,6 +597,40 @@ async def admin_export_reviews(
         headers={"Content-Disposition": "attachment; filename=reviews_export.json"}
     )
 
+@app.get("/api/admin/export/full")
+async def admin_export_full_data(
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Vollständigen Datenexport mit Reviews und Kommentaren (Admin)"""
+    export_data = crud.review_crud.full_export_data(db)
+
+    # JSON serializable machen
+    serializable_data = utils.ImportExportUtils.make_json_serializable(export_data)
+
+    return JSONResponse(
+        content=serializable_data,
+        headers={"Content-Disposition": "attachment; filename=guestbook_full_export.json"}
+    )
+
+@app.post("/api/admin/import/full")
+async def admin_import_full_data(
+    import_data: schemas.FullImportData,
+    replace_existing: bool = False,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Vollständigen Datenimport mit Reviews und Kommentaren (Admin)"""
+    result = crud.review_crud.full_import_data(db, import_data, replace_existing)
+
+    return {
+        "message": f"Import abgeschlossen: {result['imported_reviews']} Reviews und {result['imported_comments']} Kommentare importiert",
+        "imported_reviews": result["imported_reviews"],
+        "imported_comments": result["imported_comments"],
+        "skipped_reviews": result["skipped_reviews"],
+        "errors": result["errors"]
+    }
+
 # Moderation Endpoints
 
 @app.get("/api/admin/reviews/pending", response_model=schemas.ReviewListResponse)

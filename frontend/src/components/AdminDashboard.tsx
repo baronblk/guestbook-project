@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import { adminApi } from '../api';
+import { useSessionMonitor } from '../hooks/useSessionMonitor';
 import { useAuthStore } from '../store/authStore';
 import { useReviewStore } from '../store/reviewStore';
-import { useSessionMonitor } from '../hooks/useSessionMonitor';
-import { ImportExportData } from '../types';
-import { adminApi } from '../api';
-import RatingStars from './RatingStars';
-import Pagination from './Pagination';
-import ImageModal from './ImageModal';
-import SessionTimer from './SessionTimer';
-import SessionExtensionButton from './SessionExtensionButton';
-import ModerationPanel from './ModerationPanel';
+import { FullImportData } from '../types';
 import AdminCommentsPanel from './AdminCommentsPanel';
+import ImageModal from './ImageModal';
+import ModerationPanel from './ModerationPanel';
+import Pagination from './Pagination';
+import RatingStars from './RatingStars';
+import SessionExtensionButton from './SessionExtensionButton';
+import SessionTimer from './SessionTimer';
 
 interface CreateAdminForm {
   username: string;
@@ -24,18 +24,18 @@ interface CreateAdminForm {
 const AdminDashboard: React.FC = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const { 
-    reviews, 
-    filter, 
-    setFilter, 
-    fetchReviews, 
-    deleteReview, 
-    toggleReviewVisibility 
+  const {
+    reviews,
+    filter,
+    setFilter,
+    fetchReviews,
+    deleteReview,
+    toggleReviewVisibility
   } = useReviewStore();
-  
+
   // Session-Monitoring aktivieren (alle 3 Minuten)
   useSessionMonitor(3);
-  
+
   const [activeTab, setActiveTab] = useState<'reviews' | 'moderation' | 'comments' | 'admin' | 'export'>('moderation');
   const [reviewFilter, setReviewFilter] = useState<'all' | 'approved' | 'hidden'>('all');
   const [isLoading, setIsLoading] = useState(false);
@@ -43,10 +43,10 @@ const AdminDashboard: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalReviews, setTotalReviews] = useState(0);
   const [modalImage, setModalImage] = useState<string | null>(null);
-  
-  const { 
-    register: registerAdmin, 
-    handleSubmit: handleAdminSubmit, 
+
+  const {
+    register: registerAdmin,
+    handleSubmit: handleAdminSubmit,
     reset: resetAdminForm,
     formState: { errors: adminErrors }
   } = useForm<CreateAdminForm>();
@@ -56,7 +56,7 @@ const AdminDashboard: React.FC = () => {
     try {
       // Admin-API verwenden mit entsprechendem Filter
       let approved_only: boolean | undefined;
-      
+
       switch (reviewFilter) {
         case 'approved':
           approved_only = true;
@@ -67,16 +67,16 @@ const AdminDashboard: React.FC = () => {
         default:
           approved_only = undefined; // Alle anzeigen
       }
-      
+
       const response = await adminApi.getReviews({
         page: currentPage,
         per_page: 10,
         approved_only
       });
-      
+
       // Lokaler State aktualisieren
       reviews.splice(0, reviews.length, ...response.reviews);
-      
+
       setTotalPages(Math.ceil(response.total / 10));
       setTotalReviews(response.total);
     } catch (error: any) {
@@ -101,7 +101,7 @@ const AdminDashboard: React.FC = () => {
     if (!window.confirm('Sind Sie sicher, dass Sie diese Bewertung löschen möchten?')) {
       return;
     }
-    
+
     try {
       await deleteReview(id);
       toast.success('Bewertung gelöscht');
@@ -133,19 +133,19 @@ const AdminDashboard: React.FC = () => {
 
   const handleExportData = async () => {
     try {
-      const data = await adminApi.exportData();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { 
-        type: 'application/json' 
+      const data = await adminApi.exportFullData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json'
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `guestbook-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `guestbook-full-export-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success('Daten exportiert');
+      toast.success(`Vollständiger Export erstellt: ${data.total_reviews} Reviews, ${data.total_comments} Kommentare`);
     } catch (error) {
       toast.error('Fehler beim Exportieren der Daten');
     }
@@ -157,13 +157,29 @@ const AdminDashboard: React.FC = () => {
 
     try {
       const text = await file.text();
-      const data: ImportExportData = JSON.parse(text);
-      await adminApi.importData(data);
-      toast.success('Daten importiert');
-      loadReviews();
+      const data: FullImportData = JSON.parse(text);
+
+      // Warnung vor kompletter Datenwiederherstellung
+      const confirmReplace = window.confirm(
+        'Möchten Sie alle bestehenden Daten ersetzen? Diese Aktion kann nicht rückgängig gemacht werden!'
+      );
+
+      const result = await adminApi.importFullData(data, confirmReplace);
+
+      if (result.errors.length > 0) {
+        toast.error(`Import mit Fehlern: ${result.errors.length} Fehler aufgetreten`);
+        console.error('Import errors:', result.errors);
+      } else {
+        toast.success(`Import erfolgreich: ${result.imported_reviews} Reviews, ${result.imported_comments} Kommentare`);
+      }
+
+      loadReviews(); // Daten neu laden
     } catch (error) {
-      toast.error('Fehler beim Importieren der Daten');
+      toast.error('Fehler beim Importieren der Daten - Überprüfen Sie das Dateiformat');
     }
+
+    // Reset file input
+    event.target.value = '';
   };
 
   const renderReviewsTab = () => (
@@ -189,7 +205,7 @@ const AdminDashboard: React.FC = () => {
               <option value="hidden">Nur versteckte</option>
             </select>
           </div>
-          
+
         </div>
       </div>
 
@@ -199,7 +215,7 @@ const AdminDashboard: React.FC = () => {
           <h3 className="text-lg font-medium mb-4">
             Bewertungen ({reviews.length} von {totalReviews})
           </h3>
-          
+
           {isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -220,15 +236,15 @@ const AdminDashboard: React.FC = () => {
                         <span>{new Date(review.created_at).toLocaleDateString('de-DE')}</span>
                         <span>•</span>
                         <span className={`px-2 py-1 rounded-full text-xs ${
-                          review.is_approved 
-                            ? 'bg-green-100 text-green-800' 
+                          review.is_approved
+                            ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
                         }`}>
                           {review.is_approved ? 'Sichtbar' : 'Versteckt'}
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleToggleVisibility(review.id)}
@@ -240,7 +256,7 @@ const AdminDashboard: React.FC = () => {
                       >
                         {review.is_approved ? 'Verstecken' : 'Anzeigen'}
                       </button>
-                      
+
                       <button
                         onClick={() => handleDeleteReview(review.id)}
                         className="px-3 py-1 text-xs bg-red-100 text-red-800 hover:bg-red-200 rounded-md"
@@ -249,11 +265,11 @@ const AdminDashboard: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                  
+
                   {review.content && (
                     <p className="text-gray-700 mb-2">{review.content}</p>
                   )}
-                  
+
                   {review.image_path && (
                     <div className="mt-2">
                       <img
@@ -287,7 +303,7 @@ const AdminDashboard: React.FC = () => {
   const renderAdminTab = () => (
     <div className="bg-white p-6 rounded-lg shadow">
       <h3 className="text-lg font-medium mb-4">Neuen Admin-Benutzer erstellen</h3>
-      
+
       <form onSubmit={handleAdminSubmit(handleCreateAdmin)} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -302,13 +318,13 @@ const AdminDashboard: React.FC = () => {
             <p className="mt-1 text-sm text-red-600">{adminErrors.username.message}</p>
           )}
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             E-Mail
           </label>
           <input
-            {...registerAdmin('email', { 
+            {...registerAdmin('email', {
               required: 'E-Mail ist erforderlich',
               pattern: {
                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -322,13 +338,13 @@ const AdminDashboard: React.FC = () => {
             <p className="mt-1 text-sm text-red-600">{adminErrors.email.message}</p>
           )}
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Passwort
           </label>
           <input
-            {...registerAdmin('password', { 
+            {...registerAdmin('password', {
               required: 'Passwort ist erforderlich',
               minLength: {
                 value: 6,
@@ -342,7 +358,7 @@ const AdminDashboard: React.FC = () => {
             <p className="mt-1 text-sm text-red-600">{adminErrors.password.message}</p>
           )}
         </div>
-        
+
         <button
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -355,35 +371,81 @@ const AdminDashboard: React.FC = () => {
 
   const renderExportTab = () => (
     <div className="bg-white p-6 rounded-lg shadow">
-      <h3 className="text-lg font-medium mb-4">Daten Import/Export</h3>
-      
-      <div className="space-y-4">
+      <h3 className="text-lg font-medium mb-4">Vollständige Daten Sicherung & Wiederherstellung</h3>
+
+      <div className="space-y-6">
         <div>
-          <h4 className="font-medium text-gray-900 mb-2">Export</h4>
+          <h4 className="font-medium text-gray-900 mb-2">📤 Vollständiger Export</h4>
           <p className="text-sm text-gray-600 mb-3">
-            Exportieren Sie alle Gästebuchdaten als JSON-Datei.
+            Exportiert alle Gästebucheinträge inklusive zugehöriger Kommentare als JSON-Datei.
+            Diese Datei kann zur Datensicherung oder Wiederherstellung verwendet werden.
           </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-3">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-800">Exportiert werden:</h3>
+                <div className="mt-2 text-sm text-blue-700">
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Alle Gästebucheinträge (genehmigte und ausstehende)</li>
+                    <li>Alle zugehörigen Kommentare</li>
+                    <li>Bewertungen, Titel, Inhalte und Metadaten</li>
+                    <li>Admin-Notizen und Moderations-Status</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
           <button
             onClick={handleExportData}
-            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center"
           >
-            Daten exportieren
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Vollständigen Export erstellen
           </button>
         </div>
-        
+
         <hr className="my-6" />
-        
+
         <div>
-          <h4 className="font-medium text-gray-900 mb-2">Import</h4>
+          <h4 className="font-medium text-gray-900 mb-2">📥 Daten Import & Wiederherstellung</h4>
           <p className="text-sm text-gray-600 mb-3">
-            Importieren Sie Gästebuchdaten aus einer JSON-Datei.
+            Importiert Gästebuchdaten aus einer JSON-Datei (erstellt durch den obigen Export).
+            Sie können wählen, ob bestehende Daten ersetzt oder ergänzt werden sollen.
           </p>
+
+          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-3">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-yellow-800">⚠️ Wichtiger Hinweis</h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p>Beim Import werden Sie gefragt, ob bestehende Daten ersetzt werden sollen.
+                  Die Ersetzung kann nicht rückgängig gemacht werden!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <input
             type="file"
             accept=".json"
             onChange={handleImportData}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded-md"
           />
+          <p className="mt-2 text-xs text-gray-500">
+            Nur JSON-Dateien werden akzeptiert. Verwenden Sie Dateien, die durch den obigen Export erstellt wurden.
+          </p>
         </div>
       </div>
     </div>
@@ -398,25 +460,25 @@ const AdminDashboard: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900">
               Admin Dashboard
             </h1>
-            
+
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
                 Willkommen, {user?.username}
               </span>
-              
+
               {/* Session Timer */}
               <SessionTimer className="hidden sm:flex" />
-              
+
               {/* Session Extension Button - zeigt sich nur wenn Session bald abläuft */}
               <SessionExtensionButton className="hidden sm:flex" />
-              
+
               <button
                 onClick={() => navigate('/')}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 ← Zurück zum Gästebuch
               </button>
-              
+
               <button
                 onClick={logout}
                 className="bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -451,7 +513,7 @@ const AdminDashboard: React.FC = () => {
           >
             Moderation
           </button>
-          
+
           <button
             onClick={() => setActiveTab('reviews')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
@@ -462,7 +524,7 @@ const AdminDashboard: React.FC = () => {
           >
             Alle Bewertungen
           </button>
-          
+
           <button
             onClick={() => setActiveTab('comments')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
@@ -473,7 +535,7 @@ const AdminDashboard: React.FC = () => {
           >
             Kommentare
           </button>
-          
+
           <button
             onClick={() => setActiveTab('admin')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
@@ -484,7 +546,7 @@ const AdminDashboard: React.FC = () => {
           >
             Admin-Verwaltung
           </button>
-          
+
           <button
             onClick={() => setActiveTab('export')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${

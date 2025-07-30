@@ -108,6 +108,83 @@ export interface ImportExportData {
   exported_at: string;
 }
 
+// Erweiterte Export/Import Types für vollständige Datenwiederherstellung
+export interface ExportComment {
+  id: number;
+  name: string;
+  email?: string;
+  content: string;
+  created_at: string;
+  updated_at?: string;
+  is_approved: boolean;
+  admin_notes?: string;
+  ip_address?: string;
+}
+
+export interface ExportReview {
+  id: number;
+  name: string;
+  email?: string;
+  rating: number;
+  title?: string;
+  content: string;
+  image_path?: string;
+  created_at: string;
+  updated_at?: string;
+  is_approved: boolean;
+  is_featured: boolean;
+  admin_notes?: string;
+  import_source?: string;
+  external_id?: string;
+  ip_address?: string;
+  comments: ExportComment[];
+}
+
+export interface FullExportData {
+  exported_at: string;
+  export_version: string;
+  total_reviews: number;
+  total_comments: number;
+  reviews: ExportReview[];
+}
+
+export interface ImportComment {
+  name: string;
+  email?: string;
+  content: string;
+  created_at?: string;
+  is_approved?: boolean;
+  admin_notes?: string;
+}
+
+export interface ImportReviewWithComments {
+  name: string;
+  email?: string;
+  rating: number;
+  title?: string;
+  content: string;
+  created_at?: string;
+  is_approved?: boolean;
+  is_featured?: boolean;
+  admin_notes?: string;
+  import_source?: string;
+  external_id?: string;
+  comments?: ImportComment[];
+}
+
+export interface FullImportData {
+  export_version?: string;
+  reviews: ImportReviewWithComments[];
+}
+
+export interface ImportResult {
+  message: string;
+  imported_reviews: number;
+  imported_comments: number;
+  skipped_reviews: number;
+  errors: string[];
+}
+
 // Component Props Types
 export interface PaginationProps {
   currentPage: number;
