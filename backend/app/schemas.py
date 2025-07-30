@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr, validator
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
 from enum import IntEnum
 
@@ -240,9 +240,12 @@ class ImportReviewWithComments(BaseModel):
     comments: List[ImportComment] = []
 
 class FullImportData(BaseModel):
-    """Schema für vollständigen Datenimport"""
+    """Schema für vollständigen Datenimport - akzeptiert sowohl Export- als auch Import-Format"""
     export_version: Optional[str] = "2.0"
-    reviews: List[ImportReviewWithComments]
+    exported_at: Optional[datetime] = None  # Vom Export-Format
+    total_reviews: Optional[int] = None     # Vom Export-Format
+    total_comments: Optional[int] = None    # Vom Export-Format
+    reviews: List[Union[ExportReview, ImportReviewWithComments]]
 
 # Filter/Sort Schemas
 class ReviewFilters(BaseModel):

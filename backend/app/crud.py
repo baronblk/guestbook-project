@@ -286,34 +286,50 @@ class ReviewCRUD:
 
         for review_data in import_data.reviews:
             try:
-                # Review erstellen
-                db_review = models.Review(
-                    name=review_data.name,
-                    email=review_data.email,
-                    rating=review_data.rating,
-                    title=review_data.title,
-                    content=review_data.content,
-                    created_at=review_data.created_at or datetime.utcnow(),
-                    is_approved=review_data.is_approved,
-                    is_featured=review_data.is_featured,
-                    admin_notes=review_data.admin_notes,
-                    import_source=review_data.import_source,
-                    external_id=review_data.external_id
-                )
+                # Review erstellen - kompatibel mit Export- und Import-Format
+                review_dict = {
+                    "name": review_data.name,
+                    "email": review_data.email,
+                    "rating": review_data.rating,
+                    "title": review_data.title,
+                    "content": review_data.content,
+                    "created_at": getattr(review_data, 'created_at', datetime.utcnow()) or datetime.utcnow(),
+                    "is_approved": getattr(review_data, 'is_approved', True),
+                    "is_featured": getattr(review_data, 'is_featured', False),
+                    "admin_notes": getattr(review_data, 'admin_notes', None),
+                    "import_source": getattr(review_data, 'import_source', 'restore'),
+                    "external_id": getattr(review_data, 'external_id', None)
+                }
+
+                # Image-Path nur setzen wenn es existiert (aus Export-Format)
+                if hasattr(review_data, 'image_path') and review_data.image_path:
+                    review_dict["image_path"] = review_data.image_path
+
+                # IP-Adresse nur setzen wenn es existiert (aus Export-Format)
+                if hasattr(review_data, 'ip_address') and review_data.ip_address:
+                    review_dict["ip_address"] = review_data.ip_address
+
+                db_review = models.Review(**review_dict)
                 db.add(db_review)
                 db.flush()  # Flush um ID zu bekommen
 
-                # Kommentare hinzufügen
+                # Kommentare hinzufügen - kompatibel mit Export- und Import-Format
                 for comment_data in review_data.comments:
-                    db_comment = models.Comment(
-                        review_id=db_review.id,
-                        name=comment_data.name,
-                        email=comment_data.email,
-                        content=comment_data.content,
-                        created_at=comment_data.created_at or datetime.utcnow(),
-                        is_approved=comment_data.is_approved,
-                        admin_notes=comment_data.admin_notes
-                    )
+                    comment_dict = {
+                        "review_id": db_review.id,
+                        "name": comment_data.name,
+                        "email": getattr(comment_data, 'email', None),
+                        "content": comment_data.content,
+                        "created_at": getattr(comment_data, 'created_at', datetime.utcnow()) or datetime.utcnow(),
+                        "is_approved": getattr(comment_data, 'is_approved', True),
+                        "admin_notes": getattr(comment_data, 'admin_notes', None)
+                    }
+
+                    # IP-Adresse nur setzen wenn es existiert (aus Export-Format)
+                    if hasattr(comment_data, 'ip_address') and comment_data.ip_address:
+                        comment_dict["ip_address"] = comment_data.ip_address
+
+                    db_comment = models.Comment(**comment_dict)
                     db.add(db_comment)
                     imported_comments += 1
 

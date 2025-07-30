@@ -146,15 +146,7 @@ export const adminApi = {
     return response.data;
   },
 
-  // Import/Export
-  async importData(importData: {
-    reviews: Review[];
-    exported_at: string;
-  }): Promise<{ message: string; imported_count: number }> {
-    const response = await api.post('/api/admin/import', importData);
-    return response.data;
-  },
-
+  // Import/Export (Legacy functions - keeping exportData for backward compatibility)
   async exportData(): Promise<{
     reviews: Review[];
     stats: ReviewStats;
