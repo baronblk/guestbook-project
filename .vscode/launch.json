@@ -1,0 +1,78 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: FastAPI Backend",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/app/main.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "DB_HOST": "localhost",
+        "DB_USER": "guestuser", 
+        "DB_PASSWORD": "guestpw",
+        "DB_NAME": "guestbook",
+        "JWT_SECRET_KEY": "your-super-secret-jwt-key-change-in-production"
+      },
+      "args": [],
+      "django": false,
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Create Admin User",
+      "type": "debugpy", 
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/create_admin.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "DB_HOST": "localhost",
+        "DB_USER": "guestuser",
+        "DB_PASSWORD": "guestpw", 
+        "DB_NAME": "guestbook",
+        "JWT_SECRET_KEY": "your-super-secret-jwt-key-change-in-production",
+        "ADMIN_USERNAME": "admin",
+        "ADMIN_EMAIL": "admin@guestbook.local",
+        "ADMIN_PASSWORD": "admin123"
+      }
+    },
+    {
+      "name": "Docker: Attach to Backend",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5678
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}/backend",
+          "remoteRoot": "/app"
+        }
+      ],
+      "justMyCode": false
+    },
+    {
+      "name": "Node: Attach to Frontend",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "localRoot": "${workspaceFolder}/frontend",
+      "remoteRoot": "/app",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack Debug",
+      "configurations": [
+        "Python: FastAPI Backend",
+        "Node: Attach to Frontend"
+      ]
+    }
+  ]
+}
