@@ -140,7 +140,7 @@ export interface ReviewStore {
     total: number;
     total_pages: number;
   };
-  
+
   // Actions
   fetchReviews: (filter?: ReviewFilter) => Promise<{ total: number; reviews: Review[] }>;
   createReview: (review: CreateReviewForm) => Promise<boolean>;
@@ -157,12 +157,13 @@ export interface AuthStore {
   token: string | null;
   loading: boolean;
   error: string | null;
-  
+
   // Actions
   login: (credentials: LoginForm) => Promise<boolean>;
   logout: () => void;
   checkAuth: () => Promise<void>;
   validateSession: () => Promise<boolean>;
+  refreshSession: () => Promise<boolean>;
   clearError: () => void;
 }
 

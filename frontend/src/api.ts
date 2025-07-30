@@ -1,14 +1,14 @@
 import axios, { AxiosResponse } from 'axios';
-import { 
-  Review, 
-  ReviewListResponse, 
-  CreateReviewForm, 
-  UpdateReviewForm,
-  ReviewStats,
-  Token,
-  LoginForm,
-  AdminReview,
-  AdminUser
+import {
+    AdminReview,
+    AdminUser,
+    CreateReviewForm,
+    LoginForm,
+    Review,
+    ReviewListResponse,
+    ReviewStats,
+    Token,
+    UpdateReviewForm
 } from './types';
 
 // Base API configuration - use relative URL when in combined container
@@ -40,12 +40,16 @@ api.interceptors.response.use(
     if (error.response?.status === 401 || error.response?.status === 403) {
       // Session abgelaufen oder nicht authentifiziert
       localStorage.removeItem('admin_token');
-      
+
       // Prüfen ob wir uns im Admin-Bereich befinden
       if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
         // Session-Ablauf-Nachricht in localStorage speichern
         localStorage.setItem('session_expired', 'true');
-        window.location.href = '/admin/login';
+
+        // Sofortige Weiterleitung zur Login-Seite
+        setTimeout(() => {
+          window.location.href = '/admin/login';
+        }, 100);
       }
     }
     return Promise.reject(error);
@@ -80,7 +84,7 @@ export const publicApi = {
   async uploadReviewImage(reviewId: number, file: File): Promise<{ image_path: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    
+
     const response: AxiosResponse<{ image_path: string }> = await api.post(
       `/api/reviews/${reviewId}/image`,
       formData,
@@ -103,9 +107,12 @@ export const publicApi = {
 export const adminApi = {
   // Auth
   async login(credentials: LoginForm): Promise<Token> {
-    const response: AxiosResponse<Token> = await api.post('/api/admin/login', null, {
-      params: credentials
-    });
+    const response: AxiosResponse<Token> = await api.post('/api/admin/login', credentials);
+    return response.data;
+  },
+
+  async refreshToken(): Promise<Token> {
+    const response: AxiosResponse<Token> = await api.post('/api/admin/refresh');
     return response.data;
   },
 

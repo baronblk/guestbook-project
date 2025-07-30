@@ -18,7 +18,7 @@ class ReviewBase(BaseModel):
     rating: RatingEnum = Field(..., description="Bewertung von 1-5 Sternen")
     title: Optional[str] = Field(None, max_length=200, description="Optionaler Titel")
     content: str = Field(..., min_length=10, max_length=5000, description="Bewertungstext")
-    
+
     @validator('content')
     def validate_content(cls, v):
         if len(v.strip()) < 10:
@@ -51,7 +51,7 @@ class ReviewResponse(ReviewBase):
     is_approved: bool
     is_featured: bool
     comment_count: Optional[int] = 0  # Anzahl genehmigter Kommentare
-    
+
     class Config:
         from_attributes = True
 
@@ -76,7 +76,7 @@ class CommentBase(BaseModel):
     name: str = Field(..., min_length=2, max_length=100, description="Name des Kommentators")
     email: Optional[EmailStr] = Field(None, description="Optional: E-Mail für Benachrichtigungen")
     content: str = Field(..., min_length=5, max_length=2000, description="Kommentartext")
-    
+
     @validator('content')
     def validate_content(cls, v):
         if len(v.strip()) < 5:
@@ -102,7 +102,7 @@ class CommentResponse(CommentBase):
     created_at: datetime
     updated_at: Optional[datetime]
     is_approved: bool
-    
+
     class Config:
         from_attributes = True
 
@@ -133,17 +133,30 @@ class AdminUserResponse(AdminUserBase):
     is_superuser: bool
     created_at: datetime
     last_login: Optional[datetime]
-    
+
     class Config:
         from_attributes = True
 
 # Auth Schemas
+class AdminLogin(BaseModel):
+    """Schema für Admin-Login"""
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=1)
+
+class RefreshToken(BaseModel):
+    """Schema für Token-Refresh"""
+    refresh_token: str
+
 class Token(BaseModel):
+    """Schema für Authentication Token"""
     access_token: str
-    token_type: str
+    refresh_token: Optional[str] = None
+    token_type: str = "bearer"
+    expires_in: Optional[int] = None
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+    token_id: Optional[str] = None
 
 # Import Schemas
 class ImportReview(BaseModel):

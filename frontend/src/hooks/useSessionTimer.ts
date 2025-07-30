@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 
 interface SessionTimerState {
@@ -72,7 +72,7 @@ export const useSessionTimer = (): SessionTimerState => {
 
   return {
     timeLeft,
-    isExpiringSoon: timeLeft > 0 && timeLeft <= 300, // 5 Minuten Warnung
+    isExpiringSoon: timeLeft > 0 && timeLeft <= 600, // 10 Minuten Warnung
     isExpired: timeLeft <= 0 && sessionExpiry !== null,
     formatTimeLeft,
   };

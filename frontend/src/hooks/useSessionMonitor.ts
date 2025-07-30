@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../store/authStore';
 
 export const useSessionMonitor = (intervalMinutes: number = 5) => {
   const { token, validateSession, logout } = useAuthStore();
@@ -21,7 +21,7 @@ export const useSessionMonitor = (intervalMinutes: number = 5) => {
     // Session-Validierung alle X Minuten
     const validateSessionPeriodically = async () => {
       const isValid = await validateSession();
-      
+
       if (!isValid) {
         toast.error('Session abgelaufen. Sie werden zur Anmeldung weitergeleitet...');
         return;
@@ -33,12 +33,21 @@ export const useSessionMonitor = (intervalMinutes: number = 5) => {
         const expiry = payload.exp * 1000; // JWT exp ist in Sekunden
         const now = Date.now();
         const timeLeft = expiry - now;
+        const tenMinutes = 10 * 60 * 1000;
         const fiveMinutes = 5 * 60 * 1000;
 
-        if (timeLeft <= fiveMinutes && timeLeft > 0 && !warningShownRef.current) {
+        // Session ist abgelaufen - sofort ausloggen
+        if (timeLeft <= 0) {
+          toast.error('Session abgelaufen. Sie werden zur Anmeldung weitergeleitet...');
+          logout();
+          return;
+        }
+
+        // 10-Minuten-Warnung (nur einmal anzeigen)
+        if (timeLeft <= tenMinutes && timeLeft > fiveMinutes && !warningShownRef.current) {
           warningShownRef.current = true;
-          toast('Ihre Session läuft in weniger als 5 Minuten ab!', {
-            duration: 6000,
+          toast('Ihre Session läuft in weniger als 10 Minuten ab!', {
+            duration: 8000,
             icon: '⚠️',
             style: {
               background: '#FEF3C7',
@@ -48,8 +57,21 @@ export const useSessionMonitor = (intervalMinutes: number = 5) => {
           });
         }
 
+        // 5-Minuten-Warnung (kritisch)
+        if (timeLeft <= fiveMinutes && timeLeft > 0) {
+          toast('Ihre Session läuft in weniger als 5 Minuten ab! Bitte verlängern Sie Ihre Session.', {
+            duration: 6000,
+            icon: '🚨',
+            style: {
+              background: '#FEE2E2',
+              color: '#B91C1C',
+              border: '1px solid #EF4444',
+            },
+          });
+        }
+
         // Reset warning flag wenn Session wieder länger gültig ist
-        if (timeLeft > fiveMinutes) {
+        if (timeLeft > tenMinutes) {
           warningShownRef.current = false;
         }
       } catch (error) {
@@ -72,7 +94,7 @@ export const useSessionMonitor = (intervalMinutes: number = 5) => {
         intervalRef.current = null;
       }
     };
-  }, [token, validateSession, intervalMinutes]);
+  }, [token, validateSession, logout, intervalMinutes]);
 
   // Auch bei Tab-Wechsel validieren
   useEffect(() => {
@@ -85,7 +107,7 @@ export const useSessionMonitor = (intervalMinutes: number = 5) => {
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };

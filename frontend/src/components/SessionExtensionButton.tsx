@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { useAuthStore } from '../store/authStore';
-import { useSessionTimer } from '../hooks/useSessionTimer';
 import toast from 'react-hot-toast';
+import { useSessionTimer } from '../hooks/useSessionTimer';
+import { useAuthStore } from '../store/authStore';
 
 interface SessionExtensionButtonProps {
   className?: string;
   autoShow?: boolean; // Automatisch anzeigen wenn Session bald abläuft
 }
 
-const SessionExtensionButton: React.FC<SessionExtensionButtonProps> = ({ 
+const SessionExtensionButton: React.FC<SessionExtensionButtonProps> = ({
   className = '',
-  autoShow = true 
+  autoShow = true
 }) => {
   const [isExtending, setIsExtending] = useState(false);
-  const { token, validateSession } = useAuthStore();
+  const { token, refreshSession } = useAuthStore();
   const { isExpiringSoon } = useSessionTimer();
 
   // Nicht anzeigen wenn nicht eingeloggt oder nicht bald ablaufend (wenn autoShow aktiv)
@@ -24,9 +24,9 @@ const SessionExtensionButton: React.FC<SessionExtensionButtonProps> = ({
   const handleExtendSession = async () => {
     setIsExtending(true);
     try {
-      // Session durch API-Call "verlängern" (Token wird automatisch refreshed wenn möglich)
-      const isValid = await validateSession();
-      if (isValid) {
+      // Session durch Token-Refresh verlängern
+      const success = await refreshSession();
+      if (success) {
         toast.success('Session wurde erfolgreich verlängert!', {
           duration: 3000,
           icon: '✅',

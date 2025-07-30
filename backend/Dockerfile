@@ -19,8 +19,8 @@ COPY ./app /app/app
 COPY ./wait-for-db.py /app/wait-for-db.py
 COPY ./create_admin.py /app/create_admin.py
 
-# Upload-Ordner erstellen
-RUN mkdir -p /app/uploads
+# Upload-Ordner und Logs-Ordner erstellen
+RUN mkdir -p /app/uploads /app/logs
 
 # Scripts ausführbar machen
 RUN chmod +x /app/wait-for-db.py /app/create_admin.py

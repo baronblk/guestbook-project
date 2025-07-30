@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthStore, LoginForm, AdminUser } from '../types';
 import { adminApi, apiUtils } from '../api';
+import { AdminUser, AuthStore, LoginForm } from '../types';
 
 export const useAuthStore = create<AuthStore>()(
   persist(
@@ -15,13 +15,13 @@ export const useAuthStore = create<AuthStore>()(
         set({ loading: true, error: null });
         try {
           const tokenResponse = await adminApi.login(credentials);
-          
+
           // Store token
           localStorage.setItem('admin_token', tokenResponse.access_token);
-          
+
           set({
             token: tokenResponse.access_token,
-            user: { 
+            user: {
               username: credentials.username,
               // Mock user data - in real app, fetch user details
               id: 1,
@@ -58,7 +58,7 @@ export const useAuthStore = create<AuthStore>()(
           try {
             // Validierung durch einen API-Call zum Backend
             await adminApi.getReviews({ page: 1, per_page: 1 });
-            set({ 
+            set({
               token,
               user: {
                 id: 1,
@@ -83,7 +83,7 @@ export const useAuthStore = create<AuthStore>()(
       validateSession: async () => {
         const token = get().token;
         if (!token) return false;
-        
+
         try {
           await adminApi.getReviews({ page: 1, per_page: 1 });
           return true;
@@ -96,13 +96,39 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
+      // Session verlängern/refreshen
+      refreshSession: async () => {
+        const currentToken = get().token;
+        if (!currentToken) return false;
+
+        try {
+          const tokenResponse = await adminApi.refreshToken();
+
+          // Store new token
+          localStorage.setItem('admin_token', tokenResponse.access_token);
+
+          set({
+            token: tokenResponse.access_token,
+            user: get().user, // Benutzer bleibt gleich
+          });
+
+          return true;
+        } catch (error: any) {
+          // Token refresh fehlgeschlagen - logout
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            get().logout();
+          }
+          return false;
+        }
+      },
+
       clearError: () => set({ error: null }),
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         token: state.token,
-        user: state.user 
+        user: state.user
       }),
     }
   )
