@@ -111,9 +111,23 @@ class CommentAdminResponse(CommentResponse):
     admin_notes: Optional[str]
     ip_address: Optional[str]
 
+class CommentWithReviewInfo(CommentAdminResponse):
+    """Kommentar mit zugehörigen Review-Informationen für Admin"""
+    review_author: str
+    review_title: Optional[str] = None
+    review_rating: int
+
 class CommentListResponse(BaseModel):
     """Paginierte Liste von Kommentaren"""
     comments: List[CommentResponse]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+class CommentAdminListResponse(BaseModel):
+    """Paginierte Liste von Admin-Kommentaren mit Review-Info"""
+    comments: List[CommentWithReviewInfo]
     total: int
     page: int
     per_page: int

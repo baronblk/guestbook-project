@@ -529,6 +529,112 @@ class CommentCRUD:
             and_(models.Comment.review_id == review_id, models.Comment.is_approved == True)
         ).count()
 
+    @staticmethod
+    def get_comments_with_review_info(
+        db: Session,
+        skip: int = 0,
+        limit: int = 10,
+        approved_only: bool = True
+    ) -> tuple[List[dict], int]:
+        """Alle Kommentare mit Review-Informationen abrufen (für Admin)"""
+        from sqlalchemy.orm import join
+
+        query = db.query(
+            models.Comment.id,
+            models.Comment.review_id,
+            models.Comment.name,
+            models.Comment.email,
+            models.Comment.content,
+            models.Comment.created_at,
+            models.Comment.updated_at,
+            models.Comment.is_approved,
+            models.Comment.admin_notes,
+            models.Comment.ip_address,
+            models.Review.name.label('review_author'),
+            models.Review.title.label('review_title'),
+            models.Review.rating.label('review_rating')
+        ).join(models.Review, models.Comment.review_id == models.Review.id)
+
+        if approved_only:
+            query = query.filter(models.Comment.is_approved == True)
+
+        total = query.count()
+        results = query.order_by(desc(models.Comment.created_at)).offset(skip).limit(limit).all()
+
+        # Konvertiere zu Dictionary-Format
+        comments = []
+        for result in results:
+            comment_dict = {
+                'id': result.id,
+                'review_id': result.review_id,
+                'name': result.name,
+                'email': result.email,
+                'content': result.content,
+                'created_at': result.created_at,
+                'updated_at': result.updated_at,
+                'is_approved': result.is_approved,
+                'admin_notes': result.admin_notes,
+                'ip_address': result.ip_address,
+                'review_author': result.review_author,
+                'review_title': result.review_title,
+                'review_rating': result.review_rating
+            }
+            comments.append(comment_dict)
+
+        return comments, total
+
+    @staticmethod
+    def get_pending_comments_with_review_info(
+        db: Session,
+        skip: int = 0,
+        limit: int = 10
+    ) -> tuple[List[dict], int]:
+        """Pending Kommentare mit Review-Informationen abrufen (für Admin)"""
+        from sqlalchemy.orm import join
+
+        query = db.query(
+            models.Comment.id,
+            models.Comment.review_id,
+            models.Comment.name,
+            models.Comment.email,
+            models.Comment.content,
+            models.Comment.created_at,
+            models.Comment.updated_at,
+            models.Comment.is_approved,
+            models.Comment.admin_notes,
+            models.Comment.ip_address,
+            models.Review.name.label('review_author'),
+            models.Review.title.label('review_title'),
+            models.Review.rating.label('review_rating')
+        ).join(models.Review, models.Comment.review_id == models.Review.id).filter(
+            models.Comment.is_approved == False
+        )
+
+        total = query.count()
+        results = query.order_by(desc(models.Comment.created_at)).offset(skip).limit(limit).all()
+
+        # Konvertiere zu Dictionary-Format
+        comments = []
+        for result in results:
+            comment_dict = {
+                'id': result.id,
+                'review_id': result.review_id,
+                'name': result.name,
+                'email': result.email,
+                'content': result.content,
+                'created_at': result.created_at,
+                'updated_at': result.updated_at,
+                'is_approved': result.is_approved,
+                'admin_notes': result.admin_notes,
+                'ip_address': result.ip_address,
+                'review_author': result.review_author,
+                'review_title': result.review_title,
+                'review_rating': result.review_rating
+            }
+            comments.append(comment_dict)
+
+        return comments, total
+
 # Instanzen für Import
 review_crud = ReviewCRUD()
 admin_user_crud = AdminUserCRUD()

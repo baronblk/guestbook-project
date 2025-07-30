@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { apiUtils } from '../api';
 import { commentApi } from '../api/commentApi';
 import { useAuthStore } from '../store/authStore';
-import { CommentResponse, CommentAdminResponse } from '../types/comments';
-import { apiUtils } from '../api';
+import { CommentWithReviewInfo } from '../types/comments';
 
 const AdminCommentsPanel: React.FC = () => {
   const { token } = useAuthStore();
-  const [comments, setComments] = useState<CommentResponse[]>([]);
-  const [pendingComments, setPendingComments] = useState<CommentResponse[]>([]);
+  const [comments, setComments] = useState<CommentWithReviewInfo[]>([]);
+  const [pendingComments, setPendingComments] = useState<CommentWithReviewInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
@@ -20,7 +20,7 @@ const AdminCommentsPanel: React.FC = () => {
 
   const fetchComments = async (tab: 'pending' | 'all' = activeTab, page = 1) => {
     if (!token) return;
-    
+
     setLoading(true);
     setError(null);
 
@@ -52,7 +52,7 @@ const AdminCommentsPanel: React.FC = () => {
 
     try {
       await commentApi.approveComment(commentId, token);
-      
+
       // Aktualisiere Listen
       if (activeTab === 'pending') {
         setPendingComments(prev => prev.filter(c => c.id !== commentId));
@@ -65,14 +65,14 @@ const AdminCommentsPanel: React.FC = () => {
 
   const handleDelete = async (commentId: number) => {
     if (!token) return;
-    
+
     if (!window.confirm('Möchten Sie diesen Kommentar wirklich löschen?')) {
       return;
     }
 
     try {
       await commentApi.deleteComment(commentId, token);
-      
+
       // Aktualisiere Listen
       if (activeTab === 'pending') {
         setPendingComments(prev => prev.filter(c => c.id !== commentId));
@@ -174,8 +174,8 @@ const AdminCommentsPanel: React.FC = () => {
               {activeTab === 'pending' ? 'Keine ausstehenden Kommentare' : 'Keine Kommentare vorhanden'}
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {activeTab === 'pending' 
-                ? 'Alle Kommentare wurden bereits moderiert.' 
+              {activeTab === 'pending'
+                ? 'Alle Kommentare wurden bereits moderiert.'
                 : 'Es wurden noch keine Kommentare erstellt.'
               }
             </p>
@@ -201,7 +201,11 @@ const AdminCommentsPanel: React.FC = () => {
                           {comment.name}
                         </h4>
                         <p className="text-xs text-gray-500">
-                          Review ID: {comment.review_id} • {apiUtils.formatDate(comment.created_at)}
+                          Kommentar zu: <span className="font-medium text-blue-600">"{comment.review_author}"</span>
+                          {comment.review_title && <span className="text-gray-400"> - {comment.review_title}</span>}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {apiUtils.formatRating(comment.review_rating)} • {apiUtils.formatDate(comment.created_at)}
                         </p>
                       </div>
                       {!comment.is_approved && (

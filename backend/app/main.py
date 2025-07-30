@@ -685,16 +685,16 @@ async def admin_reject_review(
 
 # === ADMIN COMMENT ENDPOINTS ===
 
-@app.get("/api/admin/comments", response_model=schemas.CommentListResponse)
+@app.get("/api/admin/comments", response_model=schemas.CommentAdminListResponse)
 async def admin_get_comments(
     page: int = Query(1, ge=1, description="Seitennummer"),
     per_page: int = Query(10, ge=1, le=100, description="Einträge pro Seite"),
     current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
     db: Session = Depends(database.get_db)
 ):
-    """Alle Kommentare abrufen (Admin)"""
+    """Alle Kommentare mit Review-Informationen abrufen (Admin)"""
     skip = (page - 1) * per_page
-    comments, total = crud.comment_crud.get_comments(
+    comments, total = crud.comment_crud.get_comments_with_review_info(
         db, skip=skip, limit=per_page, approved_only=False
     )
 
@@ -708,16 +708,16 @@ async def admin_get_comments(
         "total_pages": total_pages
     }
 
-@app.get("/api/admin/comments/pending", response_model=schemas.CommentListResponse)
+@app.get("/api/admin/comments/pending", response_model=schemas.CommentAdminListResponse)
 async def admin_get_pending_comments(
     page: int = Query(1, ge=1, description="Seitennummer"),
     per_page: int = Query(10, ge=1, le=100, description="Einträge pro Seite"),
     current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
     db: Session = Depends(database.get_db)
 ):
-    """Pending Kommentare abrufen (Admin)"""
+    """Pending Kommentare mit Review-Informationen abrufen (Admin)"""
     skip = (page - 1) * per_page
-    comments, total = crud.comment_crud.get_pending_comments(
+    comments, total = crud.comment_crud.get_pending_comments_with_review_info(
         db, skip=skip, limit=per_page
     )
 

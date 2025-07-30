@@ -1,4 +1,4 @@
-import { CommentResponse, CommentCreate, CommentListResponse } from '../types/comments';
+import { CommentAdminListResponse, CommentCreate, CommentListResponse, CommentResponse } from '../types/comments';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
@@ -23,8 +23,8 @@ export const commentApi = {
 
   // Kommentare für eine Bewertung abrufen
   async getCommentsByReview(
-    reviewId: number, 
-    page: number = 1, 
+    reviewId: number,
+    page: number = 1,
     perPage: number = 10
   ): Promise<CommentListResponse> {
     const response = await fetch(
@@ -38,12 +38,12 @@ export const commentApi = {
     return response.json();
   },
 
-  // Admin: Alle Kommentare abrufen
+  // Admin: Alle Kommentare mit Review-Informationen abrufen
   async getComments(
-    page: number = 1, 
+    page: number = 1,
     perPage: number = 10,
     token: string
-  ): Promise<CommentListResponse> {
+  ): Promise<CommentAdminListResponse> {
     const response = await fetch(
       `${API_BASE_URL}/api/admin/comments?page=${page}&per_page=${perPage}`,
       {
@@ -60,12 +60,12 @@ export const commentApi = {
     return response.json();
   },
 
-  // Admin: Pending Kommentare abrufen
+  // Admin: Pending Kommentare mit Review-Informationen abrufen
   async getPendingComments(
-    page: number = 1, 
+    page: number = 1,
     perPage: number = 10,
     token: string
-  ): Promise<CommentListResponse> {
+  ): Promise<CommentAdminListResponse> {
     const response = await fetch(
       `${API_BASE_URL}/api/admin/comments/pending?page=${page}&per_page=${perPage}`,
       {

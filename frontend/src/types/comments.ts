@@ -21,6 +21,12 @@ export interface CommentAdminResponse extends CommentResponse {
   ip_address?: string;
 }
 
+export interface CommentWithReviewInfo extends CommentAdminResponse {
+  review_author: string;
+  review_title?: string;
+  review_rating: number;
+}
+
 export interface CommentUpdate {
   name?: string;
   email?: string;
@@ -31,6 +37,14 @@ export interface CommentUpdate {
 
 export interface CommentListResponse {
   comments: CommentResponse[];
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+}
+
+export interface CommentAdminListResponse {
+  comments: CommentWithReviewInfo[];
   total: number;
   page: number;
   per_page: number;
