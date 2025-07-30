@@ -250,6 +250,28 @@ export interface AuthStore {
   clearError: () => void;
 }
 
+// Admin User Management Types
+export interface AdminUserUpdate {
+  username?: string;
+  email?: string;
+  password?: string;
+  is_active?: boolean;
+  is_superuser?: boolean;
+}
+
+export interface AdminUserListResponse {
+  users: AdminUser[];
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+}
+
+export interface PasswordChangeRequest {
+  old_password: string;
+  new_password: string;
+}
+
 // Utility Types
 export type SortDirection = 'asc' | 'desc';
 export type RatingValue = 1 | 2 | 3 | 4 | 5;

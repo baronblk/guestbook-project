@@ -2,6 +2,8 @@ import axios, { AxiosResponse } from 'axios';
 import {
     AdminReview,
     AdminUser,
+    AdminUserListResponse,
+    AdminUserUpdate,
     CreateReviewForm,
     FullExportData,
     FullImportData,
@@ -123,6 +125,44 @@ export const adminApi = {
   // Admin User Management
   async createAdmin(data: { username: string; email: string; password: string }): Promise<AdminUser> {
     const response: AxiosResponse<AdminUser> = await api.post('/api/admin/users', data);
+    return response.data;
+  },
+
+  async getAdminUsers(params: {
+    page?: number;
+    per_page?: number;
+  } = {}): Promise<AdminUserListResponse> {
+    const response: AxiosResponse<AdminUserListResponse> = await api.get('/api/admin/users', { params });
+    return response.data;
+  },
+
+  async getAdminUser(id: number): Promise<AdminUser> {
+    const response: AxiosResponse<AdminUser> = await api.get(`/api/admin/users/${id}`);
+    return response.data;
+  },
+
+  async updateAdminUser(id: number, data: AdminUserUpdate): Promise<AdminUser> {
+    const response: AxiosResponse<AdminUser> = await api.put(`/api/admin/users/${id}`, data);
+    return response.data;
+  },
+
+  async deleteAdminUser(id: number): Promise<{ message: string }> {
+    const response: AxiosResponse<{ message: string }> = await api.delete(`/api/admin/users/${id}`);
+    return response.data;
+  },
+
+  async deactivateAdminUser(id: number): Promise<AdminUser> {
+    const response: AxiosResponse<AdminUser> = await api.post(`/api/admin/users/${id}/deactivate`);
+    return response.data;
+  },
+
+  async activateAdminUser(id: number): Promise<AdminUser> {
+    const response: AxiosResponse<AdminUser> = await api.post(`/api/admin/users/${id}/activate`);
+    return response.data;
+  },
+
+  async changePassword(data: { old_password: string; new_password: string }): Promise<{ message: string }> {
+    const response: AxiosResponse<{ message: string }> = await api.post('/api/admin/change-password', data);
     return response.data;
   },
 

@@ -18,6 +18,7 @@ services:
       - ADMIN_USERNAME=admin
       - ADMIN_EMAIL=support@dcng.de
       - ADMIN_PASSWORD=whHBJveMvwjs5a6p
+      - ADMIN_IS_SUPERUSER=true # true/false - Ob der Admin Superuser-Rechte haben soll
     volumes:
       - ./backend:/app
       - backend_uploads:/app/uploads

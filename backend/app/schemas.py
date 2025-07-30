@@ -141,6 +141,14 @@ class AdminUserBase(BaseModel):
 class AdminUserCreate(AdminUserBase):
     password: str = Field(..., min_length=8)
 
+class AdminUserUpdate(BaseModel):
+    """Schema für Admin-Benutzer Updates"""
+    username: Optional[str] = Field(None, min_length=3, max_length=50)
+    email: Optional[EmailStr] = None
+    password: Optional[str] = Field(None, min_length=8)
+    is_active: Optional[bool] = None
+    is_superuser: Optional[bool] = None
+
 class AdminUserResponse(AdminUserBase):
     id: int
     is_active: bool
@@ -150,6 +158,19 @@ class AdminUserResponse(AdminUserBase):
 
     class Config:
         from_attributes = True
+
+class AdminUserListResponse(BaseModel):
+    """Paginierte Liste von Admin-Benutzern"""
+    users: List[AdminUserResponse]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+class PasswordChangeRequest(BaseModel):
+    """Schema für Passwort-Änderung"""
+    old_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=8)
 
 # Auth Schemas
 class AdminLogin(BaseModel):

@@ -400,6 +400,88 @@ class AdminUserCRUD:
         db.commit()
         return user
 
+    @staticmethod
+    def get_all_admin_users(db: Session, skip: int = 0, limit: int = 100) -> List[models.AdminUser]:
+        """Alle Admin-Benutzer abrufen"""
+        return db.query(models.AdminUser).offset(skip).limit(limit).all()
+
+    @staticmethod
+    def update_admin_user(db: Session, user_id: int, user_update: schemas.AdminUserUpdate) -> Optional[models.AdminUser]:
+        """Admin-Benutzer aktualisieren"""
+        db_user = db.query(models.AdminUser).filter(models.AdminUser.id == user_id).first()
+        if not db_user:
+            return None
+
+        # Nur geänderte Felder aktualisieren
+        update_data = user_update.dict(exclude_unset=True)
+
+        # Password hashen, falls es geändert wird
+        if "password" in update_data:
+            update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
+
+        for field, value in update_data.items():
+            setattr(db_user, field, value)
+
+        db.commit()
+        db.refresh(db_user)
+        return db_user
+
+    @staticmethod
+    def delete_admin_user(db: Session, user_id: int) -> bool:
+        """Admin-Benutzer löschen"""
+        db_user = db.query(models.AdminUser).filter(models.AdminUser.id == user_id).first()
+        if not db_user:
+            return False
+
+        db.delete(db_user)
+        db.commit()
+        return True
+
+    @staticmethod
+    def deactivate_admin_user(db: Session, user_id: int) -> Optional[models.AdminUser]:
+        """Admin-Benutzer deaktivieren"""
+        db_user = db.query(models.AdminUser).filter(models.AdminUser.id == user_id).first()
+        if not db_user:
+            return None
+
+        db_user.is_active = False
+        db.commit()
+        db.refresh(db_user)
+        return db_user
+
+    @staticmethod
+    def activate_admin_user(db: Session, user_id: int) -> Optional[models.AdminUser]:
+        """Admin-Benutzer aktivieren"""
+        db_user = db.query(models.AdminUser).filter(models.AdminUser.id == user_id).first()
+        if not db_user:
+            return None
+
+        db_user.is_active = True
+        db.commit()
+        db.refresh(db_user)
+        return db_user
+
+    @staticmethod
+    def change_password(db: Session, user_id: int, old_password: str, new_password: str) -> bool:
+        """Passwort eines Admin-Benutzers ändern"""
+        db_user = db.query(models.AdminUser).filter(models.AdminUser.id == user_id).first()
+        if not db_user:
+            return False
+
+        # Altes Passwort prüfen
+        if not verify_password(old_password, db_user.hashed_password):
+            return False
+
+        # Neues Passwort setzen
+        db_user.hashed_password = get_password_hash(new_password)
+        db.commit()
+        return True
+
+    @staticmethod
+    def get_admin_user_by_email(db: Session, email: str) -> Optional[models.AdminUser]:
+        """Admin-Benutzer nach E-Mail abrufen"""
+        return db.query(models.AdminUser).filter(models.AdminUser.email == email).first()
+
 # Comment CRUD
 class CommentCRUD:
 

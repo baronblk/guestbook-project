@@ -768,6 +768,233 @@ async def admin_delete_comment(
         raise HTTPException(status_code=404, detail="Kommentar nicht gefunden")
     return {"message": "Kommentar erfolgreich gelöscht"}
 
+# === ADMIN USER MANAGEMENT ENDPOINTS ===
+
+@app.post("/api/admin/users", response_model=schemas.AdminUserResponse)
+async def create_admin_user(
+    user_data: schemas.AdminUserCreate,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Neuen Admin-Benutzer erstellen (nur für Superuser)"""
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Nur Superuser können Admin-Benutzer erstellen"
+        )
+
+    # Prüfen ob Username bereits existiert
+    existing_user = crud.admin_user_crud.get_admin_user_by_username(db, user_data.username)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Benutzername bereits vergeben"
+        )
+
+    # Prüfen ob E-Mail bereits existiert
+    existing_email = crud.admin_user_crud.get_admin_user_by_email(db, user_data.email)
+    if existing_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="E-Mail-Adresse bereits vergeben"
+        )
+
+    return crud.admin_user_crud.create_admin_user(db, user_data)
+
+@app.get("/api/admin/users", response_model=schemas.AdminUserListResponse)
+async def get_admin_users(
+    page: int = Query(1, ge=1, description="Seitennummer"),
+    per_page: int = Query(10, ge=1, le=100, description="Einträge pro Seite"),
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Alle Admin-Benutzer abrufen"""
+    skip = (page - 1) * per_page
+    users = crud.admin_user_crud.get_all_admin_users(db, skip=skip, limit=per_page)
+    total_users = db.query(models.AdminUser).count()
+    total_pages = (total_users + per_page - 1) // per_page
+
+    return schemas.AdminUserListResponse(
+        users=users,
+        total=total_users,
+        page=page,
+        per_page=per_page,
+        total_pages=total_pages
+    )
+
+@app.get("/api/admin/users/{user_id}", response_model=schemas.AdminUserResponse)
+async def get_admin_user(
+    user_id: int,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Einzelnen Admin-Benutzer abrufen"""
+    user = crud.admin_user_crud.get_admin_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Admin-Benutzer nicht gefunden")
+    return user
+
+@app.put("/api/admin/users/{user_id}", response_model=schemas.AdminUserResponse)
+async def update_admin_user(
+    user_id: int,
+    user_update: schemas.AdminUserUpdate,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Admin-Benutzer aktualisieren"""
+    # Prüfen ob User existiert
+    target_user = crud.admin_user_crud.get_admin_user(db, user_id)
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Admin-Benutzer nicht gefunden")
+
+    # Berechtigung prüfen: Nur Superuser oder der User selbst
+    if not current_user.is_superuser and current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Keine Berechtigung"
+        )
+
+    # Superuser-Status-Änderungen handhaben
+    if user_update.is_superuser is not None:
+        # Nur Superuser können Superuser-Status ändern
+        if not current_user.is_superuser:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Nur Superuser können Superuser-Status ändern"
+            )
+
+        # Verhindere, dass sich ein Superuser selbst den Superuser-Status entzieht
+        if current_user.id == user_id and target_user.is_superuser and not user_update.is_superuser:
+            # Prüfe, ob es andere aktive Superuser gibt
+            other_superusers = db.query(models.AdminUser).filter(
+                models.AdminUser.id != user_id,
+                models.AdminUser.is_superuser == True,
+                models.AdminUser.is_active == True
+            ).count()
+
+            if other_superusers == 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Sie können sich nicht selbst den Superuser-Status entziehen, da Sie der einzige aktive Superuser sind"
+                )
+
+    # Username-Eindeutigkeit prüfen
+    if user_update.username and user_update.username != target_user.username:
+        existing_user = crud.admin_user_crud.get_admin_user_by_username(db, user_update.username)
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Benutzername bereits vergeben"
+            )
+
+    # E-Mail-Eindeutigkeit prüfen
+    if user_update.email and user_update.email != target_user.email:
+        existing_email = crud.admin_user_crud.get_admin_user_by_email(db, user_update.email)
+        if existing_email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="E-Mail-Adresse bereits vergeben"
+            )
+
+    updated_user = crud.admin_user_crud.update_admin_user(db, user_id, user_update)
+    return updated_user
+
+@app.delete("/api/admin/users/{user_id}")
+async def delete_admin_user(
+    user_id: int,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Admin-Benutzer löschen (nur für Superuser)"""
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Nur Superuser können Admin-Benutzer löschen"
+        )
+
+    # Sich selbst nicht löschen
+    if current_user.id == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Sie können sich nicht selbst löschen"
+        )
+
+    # Prüfen ob User existiert
+    target_user = crud.admin_user_crud.get_admin_user(db, user_id)
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Admin-Benutzer nicht gefunden")
+
+    deleted = crud.admin_user_crud.delete_admin_user(db, user_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Admin-Benutzer nicht gefunden")
+
+    return {"message": "Admin-Benutzer erfolgreich gelöscht"}
+
+@app.post("/api/admin/users/{user_id}/deactivate", response_model=schemas.AdminUserResponse)
+async def deactivate_admin_user(
+    user_id: int,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Admin-Benutzer deaktivieren (nur für Superuser)"""
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Nur Superuser können Admin-Benutzer deaktivieren"
+        )
+
+    # Sich selbst nicht deaktivieren
+    if current_user.id == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Sie können sich nicht selbst deaktivieren"
+        )
+
+    user = crud.admin_user_crud.deactivate_admin_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Admin-Benutzer nicht gefunden")
+    return user
+
+@app.post("/api/admin/users/{user_id}/activate", response_model=schemas.AdminUserResponse)
+async def activate_admin_user(
+    user_id: int,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Admin-Benutzer aktivieren (nur für Superuser)"""
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Nur Superuser können Admin-Benutzer aktivieren"
+        )
+
+    user = crud.admin_user_crud.activate_admin_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Admin-Benutzer nicht gefunden")
+    return user
+
+@app.post("/api/admin/change-password")
+async def change_admin_password(
+    password_data: schemas.PasswordChangeRequest,
+    current_user: models.AdminUser = Depends(auth.get_current_active_admin_user),
+    db: Session = Depends(database.get_db)
+):
+    """Eigenes Passwort ändern"""
+    success = crud.admin_user_crud.change_password(
+        db,
+        current_user.id,
+        password_data.old_password,
+        password_data.new_password
+    )
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Altes Passwort ist falsch"
+        )
+
+    return {"message": "Passwort erfolgreich geändert"}
+
 # Error Handlers
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):

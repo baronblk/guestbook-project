@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   db:
@@ -35,19 +35,20 @@ services:
       DB_NAME: ${DB_NAME:-guestbook}
       DB_USER: ${DB_USER:-guestbook_user}
       DB_PASSWORD: ${DB_PASSWORD:-secure_password}
-      
+
       # Admin User
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
-      
+      ADMIN_IS_SUPERUSER: ${ADMIN_IS_SUPERUSER:-true}
+
       # Security
       SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production}
       JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-change-in-production}
-      
+
       # API Settings
       API_CORS_ORIGINS: ${API_CORS_ORIGINS:-http://localhost,http://localhost:3000,http://localhost:80}
-      
+
     volumes:
       - guestbook_uploads:/app/uploads
     networks:
