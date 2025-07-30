@@ -1,0 +1,48 @@
+{
+  "name": "guestbook-project",
+  "version": "1.0.0",
+  "description": "Ein modernes, vollständig containerisiertes Gästebuch-System mit React Frontend und FastAPI Backend",
+  "main": "index.js",
+  "scripts": {
+    "dev": "docker-compose up --build",
+    "start": "docker-compose up",
+    "stop": "docker-compose down",
+    "clean": "docker-compose down -v --remove-orphans",
+    "logs": "docker-compose logs -f",
+    "build": "docker-compose build",
+    "test": "docker-compose exec frontend npm test && docker-compose exec backend pytest",
+    "lint": "docker-compose exec frontend npm run lint && docker-compose exec backend flake8",
+    "format": "docker-compose exec frontend npm run format && docker-compose exec backend black .",
+    "backup": "docker-compose exec db mysqldump -u guestuser -pguestpw guestbook > backup.sql",
+    "restore": "docker-compose exec -T db mysql -u guestuser -pguestpw guestbook < backup.sql"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/baronblk/guestbook-project.git"
+  },
+  "keywords": [
+    "guestbook",
+    "react",
+    "fastapi",
+    "typescript",
+    "python",
+    "docker",
+    "mariadb",
+    "jwt",
+    "fullstack",
+    "web-application"
+  ],
+  "author": "baronblk",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/baronblk/guestbook-project/issues"
+  },
+  "homepage": "https://github.com/baronblk/guestbook-project#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "docker": ">=20.0.0",
+    "docker-compose": ">=2.0.0"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}

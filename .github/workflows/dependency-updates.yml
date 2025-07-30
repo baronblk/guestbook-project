@@ -1,0 +1,109 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Wöchentlich am Montag um 9:00 UTC ausführen
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  update-python-dependencies:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install pip-tools
+      run: pip install pip-tools
+
+    - name: Update Python dependencies
+      run: |
+        cd backend
+        pip-compile --upgrade requirements.in || echo "No requirements.in found, skipping Python updates"
+
+    - name: Create Pull Request for Python dependencies
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update Python dependencies'
+        title: 'chore: Update Python Dependencies'
+        body: |
+          Automatisches Update der Python-Dependencies.
+          
+          Bitte prüfe die Änderungen und teste das System vor dem Merge.
+        branch: update-python-deps
+        delete-branch: true
+
+  update-node-dependencies:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Update Node dependencies
+      run: |
+        cd frontend
+        npm update
+        npm audit fix --force || true
+
+    - name: Create Pull Request for Node dependencies
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update Node.js dependencies'
+        title: 'chore: Update Node.js Dependencies'
+        body: |
+          Automatisches Update der Node.js-Dependencies.
+          
+          Bitte prüfe die Änderungen und teste das System vor dem Merge.
+        branch: update-node-deps
+        delete-branch: true
+
+  update-docker-base-images:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Update Docker base images
+      run: |
+        # Update Python base image in backend Dockerfile
+        sed -i 's/python:[0-9]\+\.[0-9]\+/python:3.11/g' backend/Dockerfile
+        
+        # Update Node base image in frontend Dockerfile
+        sed -i 's/node:[0-9]\+/node:18/g' frontend/Dockerfile
+        
+        # Update MariaDB version in docker-compose
+        sed -i 's/mariadb:[0-9]\+\.[0-9]\+/mariadb:10.11/g' docker-compose*.yml
+
+    - name: Create Pull Request for Docker base images
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update Docker base images'
+        title: 'chore: Update Docker Base Images'
+        body: |
+          Automatisches Update der Docker-Base-Images.
+          
+          Bitte prüfe die Änderungen und teste das System vor dem Merge.
+        branch: update-docker-images
+        delete-branch: true
