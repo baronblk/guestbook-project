@@ -1,0 +1,188 @@
+# ===========================================
+# PORTAINER STACK: GUESTBOOK APPLICATION
+# ===========================================
+#
+# Diese Datei ist für die Verwendung in Portainer optimiert
+# und nutzt Environment-Variablen aus der portainer.env Datei
+#
+# 🚀 DEPLOYMENT in Portainer:
+#   1. Stack erstellen
+#   2. Environment-Variablen aus portainer.env kopieren
+#   3. Diese YAML-Datei als Stack-Definition verwenden
+#
+# 📊 MONITORING:
+#   - Health Checks sind konfiguriert
+#   - Logs über Portainer einsehbar
+#
+# 🔐 ADMIN-ZUGANG:
+#   - URL: https://guestbook.gcng.de
+#   - Admin-Panel: https://guestbook.gcng.de/admin
+#   - Username: ${ADMIN_USERNAME}
+#   - Password: ${ADMIN_PASSWORD}
+#   - Rolle: ${ADMIN_ROLE}
+#
+# ===========================================
+
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: guestbook-mariadb
+    restart: unless-stopped
+    platform: linux/amd64
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+    volumes:
+    - ${DB_VOLUME_PATH}:/var/lib/mysql
+
+    networks:
+    - guestbook-network
+
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    labels:
+    - "traefik.enable=false"
+    - "portainer.stack=guestbook"
+
+  app:
+    image: ${GUESTBOOK_IMAGE}
+    container_name: guestbook-app
+    restart: unless-stopped
+    platform: linux/amd64
+
+    ports:
+    - "${APP_PORT}:80"
+
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+    environment:
+      # Database Configuration
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+
+      # JWT Configuration
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+      REFRESH_TOKEN_EXPIRE_HOURS: ${REFRESH_TOKEN_EXPIRE_HOURS}
+
+      # Admin Configuration
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_ROLE: ${ADMIN_ROLE}
+      ADMIN_IS_SUPERUSER: ${ADMIN_IS_SUPERUSER}
+
+      # CORS & Security Configuration
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+
+      # Application Environment
+      ENVIRONMENT: ${ENVIRONMENT}
+      DEBUG: ${DEBUG}
+      LOG_LEVEL: ${LOG_LEVEL}
+
+      # Extended Logging Configuration
+      UVICORN_LOG_LEVEL: ${UVICORN_LOG_LEVEL}
+      UVICORN_ACCESS_LOG: ${UVICORN_ACCESS_LOG}
+      SQLALCHEMY_ECHO: ${SQLALCHEMY_ECHO}
+      ENABLE_SQL_LOGGING: ${ENABLE_SQL_LOGGING}
+      ENABLE_REQUEST_LOGGING: ${ENABLE_REQUEST_LOGGING}
+      ENABLE_ERROR_LOGGING: ${ENABLE_ERROR_LOGGING}
+      ENABLE_VALIDATION_LOGGING: ${ENABLE_VALIDATION_LOGGING}
+      LOG_FORMAT: ${LOG_FORMAT}
+      LOG_TO_CONSOLE: ${LOG_TO_CONSOLE}
+      LOG_TO_FILE: ${LOG_TO_FILE}
+
+      # Security Settings
+      ENABLE_RATE_LIMITING: ${ENABLE_RATE_LIMITING}
+      ENABLE_BRUTE_FORCE_PROTECTION: ${ENABLE_BRUTE_FORCE_PROTECTION}
+      MAX_LOGIN_ATTEMPTS: ${MAX_LOGIN_ATTEMPTS}
+      LOGIN_BLOCK_DURATION: ${LOGIN_BLOCK_DURATION}
+      ENABLE_SECURITY_MONITORING: ${ENABLE_SECURITY_MONITORING}
+
+    volumes:
+    - ${UPLOADS_VOLUME_PATH}:/app/uploads
+
+    networks:
+    - guestbook-network
+
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/docs" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    labels:
+    - "traefik.enable=false"
+    - "portainer.stack=guestbook"
+
+networks:
+  guestbook-network:
+    name: ${NETWORK_NAME}
+    driver: bridge
+
+# ===========================================
+# DEPLOYMENT-ANWEISUNGEN FÜR PORTAINER
+# ===========================================
+#
+# 1. STACK ERSTELLEN:
+#    - In Portainer -> Stacks -> Add Stack
+#    - Name: guestbook
+#    - Diese YAML-Datei einfügen
+#
+# 2. ENVIRONMENT VARIABLEN:
+#    - Environment variables Sektion öffnen
+#    - Inhalt der portainer.env Datei kopieren
+#    - ODER: Advanced mode verwenden und .env file uploaden
+#
+# 3. VOLUME PFADE ANPASSEN:
+#    - DB_VOLUME_PATH: Pfad für MariaDB Daten
+#    - UPLOADS_VOLUME_PATH: Pfad für Upload-Dateien
+#    - Je nach Server-Konfiguration anpassen
+#
+# 4. DEPLOYMENT:
+#    - Deploy the stack
+#    - Logs über Portainer überwachen
+#
+# 5. ZUGRIFF:
+#    - Web: http://SERVER_IP:8080
+#    - Admin: http://SERVER_IP:8080/admin
+#
+# ===========================================
+# WICHTIGE HINWEISE
+# ===========================================
+#
+# 🔒 SICHERHEIT:
+#    - Passwörter in Produktion ändern
+#    - CORS_ORIGINS einschränken
+#    - DEBUG in Produktion deaktivieren
+#
+# 📊 MONITORING:
+#    - Health Checks sind aktiviert
+#    - Logs über Portainer Container-Logs
+#    - Restart-Policy: unless-stopped
+#
+# 🔧 ANPASSUNGEN:
+#    - Image-Version in GUESTBOOK_IMAGE
+#    - Port-Mapping über APP_PORT
+#    - Volume-Pfade über *_VOLUME_PATH
+#
+# ===========================================
