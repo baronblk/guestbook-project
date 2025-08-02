@@ -40,6 +40,13 @@ nginx: [error] open() '/app/uploads/[filename].jpeg' failed (13: Permission deni
 - Optimierte Entrypoint-Skript-Implementierung
 - Bereinigung veralteter Dockerfile-Varianten (Dockerfile.reviews, Dockerfile.simple entfernt)
 
+**Repository-Bereinigung:**
+- 10 unnötige .py Debug/Test-Skripte aus Root entfernt
+- 11 unnötige .sh Debug/Deploy-Skripte aus Root entfernt
+- 9 unnötige .md Dokumentationsdateien entfernt
+- 1 leere test-image-urls.js Datei entfernt
+- Saubere Projektstruktur ohne temporäre Dateien
+
 **Portainer-Integration:**
 - Vereinfachte Stack-Bereitstellung
 - Verbesserte Container-Überwachung
@@ -90,6 +97,8 @@ nginx: [error] open() '/app/uploads/[filename].jpeg' failed (13: Permission deni
 - `README.md` (ERWEITERT mit Docker-Dokumentation)
 - `CHANGELOG.md` (AKTUALISIERT)
 - Veraltete Dockerfiles entfernt: `Dockerfile.reviews`, `Dockerfile.simple`, `examples/Dockerfile.no-nginx`
+- Unnötige .py Dateien aus Root entfernt: 10 Debug/Test-Skripte
+- Unnötige .sh Skripte aus Root entfernt: 11 Debug/Deploy-Skripte
 
 **Docker-Befehle ausgeführt:**
 ```bash

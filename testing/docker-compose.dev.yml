@@ -1,0 +1,70 @@
+version: "3.8"
+
+services:
+  app:
+    image: guestbook-test:latest
+    container_name: guestbook-test-app
+    ports:
+      - "8080:80"
+    environment:
+      # Database
+      DATABASE_URL: "mysql+pymysql://guestuser:testpassword123@db:3306/guestbook"
+      DB_HOST: "db"
+      DB_PORT: "3306"
+      DB_NAME: "guestbook"
+      DB_USER: "guestuser"
+      DB_PASSWORD: "testpassword123"
+
+      # Admin User - EINFACHE CREDENTIALS FÜR TESTING
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "admin123"
+      ADMIN_EMAIL: "admin@test.local"
+      ADMIN_IS_SUPERUSER: "true"
+
+      # Security - GELOCKERT FÜR TESTING
+      SECRET_KEY: "test-secret-key-for-local-development-only-not-secure"
+      RATE_LIMIT_ENABLED: "false"
+      SECURITY_MONITORING: "false"
+
+      # Logging
+      LOG_LEVEL: "DEBUG"
+      DEBUG: "true"
+
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - guestbook-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  db:
+    image: mariadb:11
+    container_name: guestbook-test-db
+    environment:
+      MYSQL_ROOT_PASSWORD: "roottest123"
+      MYSQL_DATABASE: "guestbook"
+      MYSQL_USER: "guestuser"
+      MYSQL_PASSWORD: "testpassword123"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - guestbook-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  guestbook-network:
+    driver: bridge
