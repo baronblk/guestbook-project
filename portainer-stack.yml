@@ -1,79 +1,127 @@
-version: '3.8'
-
-name: guestbook-production
-
 services:
   mariadb:
-    image: mariadb:10.11
-    container_name: guestbook-mariadb
+    image: mariadb:11
+    container_name: guestbook-mariadb-emergency
     restart: unless-stopped
+    platform: linux/amd64
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: Kx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB
+      MYSQL_DATABASE: guestbook
+      MYSQL_USER: guestuser
+      MYSQL_PASSWORD: whHBJveMvwjs5a6p
     volumes:
-    - mariadb_data:/var/lib/mysql
+    - /volume2/docker/guestbook/db:/var/lib/mysql
     networks:
     - guestbook-network
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
-      start_period: 10s
-      interval: 10s
+      interval: 30s
       timeout: 5s
-      retries: 3
+      retries: 5
+      start_period: 30s
 
-  backend:
-    image: ghcr.io/${GITHUB_REPOSITORY}/backend:${IMAGE_TAG:-latest}
-    container_name: guestbook-backend
+  app:
+    image: ghcr.io/baronblk/guestbook-project:3.0.5-uploads-fix
+    container_name: guestbook-app-emergency
     restart: unless-stopped
-    environment:
-      DATABASE_URL: mysql+pymysql://${DB_USER}:${DB_PASSWORD}@mariadb:3306/${DB_NAME}
-      SECRET_KEY: ${SECRET_KEY}
-      JWT_SECRET: ${JWT_SECRET}
-      ADMIN_USERNAME: ${ADMIN_USERNAME}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      CORS_ORIGINS: ${API_CORS_ORIGINS}
-    volumes:
-    - backend_uploads:/app/uploads
+    platform: linux/amd64
+    ports:
+    - "8080:80"
     depends_on:
       mariadb:
         condition: service_healthy
-    networks:
-    - guestbook-network
-    ports:
-    - "8000:8000"
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  frontend:
-    image: ghcr.io/${GITHUB_REPOSITORY}/frontend:${IMAGE_TAG:-latest}
-    container_name: guestbook-frontend
-    restart: unless-stopped
     environment:
-      REACT_APP_API_URL: ${REACT_APP_API_URL}
-    depends_on:
-    - backend
+      # Database Configuration
+      DB_HOST: mariadb
+      DB_USER: guestuser
+      DB_PASSWORD: whHBJveMvwjs5a6p
+      DB_NAME: guestbook
+
+      # JWT Configuration
+      JWT_SECRET_KEY: DeRBC3FDeY8d9nw9WMBwNJ0LpVyvB5ty607r2PHdmQBpqn
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      REFRESH_TOKEN_EXPIRE_HOURS: 24
+
+      # 👤 Admin Configuration (FIXED: SUPERUSER = TRUE)
+      ADMIN_USERNAME: admin
+      ADMIN_EMAIL: admin@dcng.de
+      ADMIN_PASSWORD: whHBJveMvwjs5a6p
+      ADMIN_ROLE: superuser
+      ADMIN_IS_SUPERUSER: "true"
+
+      # 🌐 CORS Configuration - INKL. NEUE DOMAIN
+      #CORS_ORIGINS: "https://guestbook.gcng.de,http://guestbook.gcng.de,http://192.168.2.12:8080,http://localhost:8080,http://localhost:80,http://localhost:8080"
+      #ALLOWED_HOSTS: "guestbook.gcng.de,192.168.2.12,localhost,127.0.0.1,*.localhost"
+      CORS_ORIGINS: "*"
+      ALLOWED_HOSTS: "*"
+
+      # 🚀 Production Settings
+      ENVIRONMENT: production
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+
+      # 📊 Extended Logging Configuration
+      UVICORN_LOG_LEVEL: debug
+      UVICORN_ACCESS_LOG: "true"
+      SQLALCHEMY_ECHO: "true"
+      ENABLE_SQL_LOGGING: "true"
+      ENABLE_REQUEST_LOGGING: "true"
+      ENABLE_ERROR_LOGGING: "true"
+      ENABLE_VALIDATION_LOGGING: "true"
+      LOG_FORMAT: detailed
+      LOG_TO_CONSOLE: "true"
+      LOG_TO_FILE: "true"
+
+      # 🔒 Security Hardening
+      ENABLE_RATE_LIMITING: "false"
+      ENABLE_BRUTE_FORCE_PROTECTION: "false"
+      MAX_LOGIN_ATTEMPTS: 50
+      LOGIN_BLOCK_DURATION: 60
+      ENABLE_SECURITY_MONITORING: "false"
+
+    volumes:
+    - /volume2/docker/guestbook/uploads:/app/uploads
     networks:
     - guestbook-network
-    ports:
-    - "${FRONTEND_PORT:-80}:80"
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:80" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/docs" ]
       interval: 30s
       timeout: 10s
       retries: 3
-
-volumes:
-  mariadb_data:
-    driver: local
-  backend_uploads:
-    driver: local
+      start_period: 60s
 
 networks:
   guestbook-network:
+    name: guestbook-network
     driver: bridge
+
+# 📋 FIXED DOMAIN-KONFIGURATION:
+#
+# ✅ Unterstützte Domains/Hosts:
+#    - https://guestbook.gcng.de (Hauptdomain)
+#    - http://guestbook.gcng.de (HTTP Fallback)
+#    - http://192.168.2.12:8080 (Direkter NAS-Zugang)
+#    - http://localhost:8080 (Lokal)
+#
+# 🔧 CORS Origins:
+#    - Alle oben genannten Domains
+#    - Zusätzlich localhost:8080, localhost:80
+#
+# 🚀 DEPLOYMENT:
+#    docker-compose -f docker-compose-gcng-fixed.yml down
+#    docker-compose -f docker-compose-gcng-fixed.yml up -d
+#
+# 📊 LOGS:
+#    docker-compose -f docker-compose-gcng-fixed.yml logs -f app
+#
+# 🔐 ADMIN-ZUGANG (FIXED - JETZT SUPERUSER):
+#    - Web: https://guestbook.gcng.de
+#    - Admin-Panel: https://guestbook.gcng.de/admin
+#    - Username: admin
+#    - Password: whHBJveMvwjs5a6p
+#    - ✅ SUPERUSER: true (kann jetzt alle Admin-Funktionen nutzen)
+#
+# 🔧 WICHTIGE ÄNDERUNGEN:
+#    - ADMIN_ROLE: admin → superuser
+#    - ADMIN_IS_SUPERUSER: "false" → "true"

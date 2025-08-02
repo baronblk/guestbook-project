@@ -299,11 +299,11 @@ const AdminDashboard: React.FC = () => {
                   {review.image_path && (
                     <div className="mt-2">
                       <img
-                        src={`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${review.image_path}`}
+                        src={`${window.location.origin}${review.image_path}`}
                         alt="Review-Bild"
                         className="max-w-xs rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
                         onClick={() => {
-                          setModalImage(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${review.image_path}`);
+                          setModalImage(`${window.location.origin}${review.image_path || ''}`);
                         }}
                       />
                       <p className="text-xs text-gray-500 mt-1">Klicken zum Vergrößern</p>

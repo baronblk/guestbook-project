@@ -20,6 +20,7 @@ import {
 // Base API configuration - use relative URL when in combined container
 const API_BASE_URL = process.env.REACT_APP_API_URL || (
   // Always use relative URLs when deployed (including localhost in combined container)
+  // This ensures HTTPS requests go to the same domain/protocol
   ''
 );
 

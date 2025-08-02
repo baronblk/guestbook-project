@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useReviewStore } from '../store/reviewStore';
-import RatingStars from './RatingStars';
-import Pagination from './Pagination';
-import ImageModal from './ImageModal';
-import CommentSection from './CommentSection';
 import { apiUtils } from '../api';
+import { useReviewStore } from '../store/reviewStore';
+import CommentSection from './CommentSection';
+import ImageModal from './ImageModal';
+import Pagination from './Pagination';
+import RatingStars from './RatingStars';
 
 interface ReviewListProps {
   embedded?: boolean;
@@ -20,7 +20,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
     setPage,
     clearError,
   } = useReviewStore();
-  
+
   // Modal state for image viewing
   const [modalImage, setModalImage] = useState<{ src: string; alt: string } | null>(null);
 
@@ -138,7 +138,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
               <div className="mb-6">
                 <div className="text-gray-700 leading-relaxed text-base">
                   <p className="whitespace-pre-wrap">
-                    {embedded 
+                    {embedded
                       ? apiUtils.truncateText(review.content, 150)
                       : review.content
                     }
@@ -149,18 +149,18 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
               {/* Image */}
               {review.image_path && (
                 <div className="mb-4">
-                  <div 
+                  <div
                     className="relative overflow-hidden rounded-xl group cursor-pointer"
                     onClick={() => {
                       console.log('Image clicked, opening modal for:', review.image_path);
                       setModalImage({
-                        src: `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${review.image_path}`,
+                        src: `${window.location.origin}${review.image_path || ''}`,
                         alt: `Bewertungsbild von ${review.name}`
                       });
                     }}
                   >
                     <img
-                      src={`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${review.image_path}`}
+                      src={`${window.location.origin}${review.image_path}`}
                       alt="Bewertungsbild"
                       className="w-full h-48 object-cover transition-all duration-300 group-hover:scale-105"
                     />
@@ -190,7 +190,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
                     {apiUtils.formatDate(review.created_at)}
                   </time>
                 </div>
-                
+
                 {/* Comment Count & Review Number */}
                 <div className="flex items-center space-x-4">
                   {/* Comment Count */}
@@ -202,7 +202,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
                       <span>{review.comment_count} Kommentar{review.comment_count !== 1 ? 'e' : ''}</span>
                     </div>
                   )}
-                  
+
                   {/* Review-Nummer */}
                   <div className="flex items-center space-x-2">
                     <span className="text-xs text-gray-400 font-medium">
@@ -215,8 +215,8 @@ const ReviewList: React.FC<ReviewListProps> = ({ embedded = false }) => {
 
               {/* Comment Section - nur wenn nicht embedded */}
               {!embedded && (
-                <CommentSection 
-                  reviewId={review.id} 
+                <CommentSection
+                  reviewId={review.id}
                   reviewAuthor={review.name}
                 />
               )}

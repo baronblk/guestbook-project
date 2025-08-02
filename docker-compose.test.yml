@@ -13,7 +13,17 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-pKx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB"]
+      test:
+        [
+          "CMD",
+          "mariadb-admin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-pKx9mP2vR8nQ5wE7tY3uI6oL1sA4hG9jB",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,27 +32,64 @@ services:
       - guestbook-network
 
   app:
-    image: guestbook-simple-local:latest
+    image: guestbook-test:latest
     pull_policy: never
     restart: unless-stopped
     ports:
-      - "8080:8000"
+      - "8080:80"
     depends_on:
       db:
         condition: service_healthy
     environment:
+      # Database Configuration
       DB_HOST: db
       DB_USER: guestuser
       DB_PASSWORD: whHBJveMvwjs5a6p
       DB_NAME: guestbook
+
+      # JWT Configuration
       JWT_SECRET_KEY: DeRBC3FDeY8d9nw9WMBwNJ0LpVyvB5ty607r2PHdmQBpqn
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      REFRESH_TOKEN_EXPIRE_HOURS: 24
+
+      # 👤 Admin Configuration (SUPERUSER für Test)
       ADMIN_USERNAME: admin
-      ADMIN_EMAIL: support@dcng.de
+      ADMIN_EMAIL: admin@dcng.de
       ADMIN_PASSWORD: whHBJveMvwjs5a6p
+      ADMIN_ROLE: superuser
+      ADMIN_IS_SUPERUSER: "true"
+
+      # 🌐 CORS Configuration
+      CORS_ORIGINS: "http://localhost:8080,http://localhost:80,http://localhost:3000"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,*.localhost"
+
+      # 🚀 Development Settings
+      ENVIRONMENT: development
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+
+      # 📊 Extended Logging Configuration
+      UVICORN_LOG_LEVEL: debug
+      UVICORN_ACCESS_LOG: "true"
+      SQLALCHEMY_ECHO: "true"
+      ENABLE_SQL_LOGGING: "true"
+      ENABLE_REQUEST_LOGGING: "true"
+      ENABLE_ERROR_LOGGING: "true"
+      ENABLE_VALIDATION_LOGGING: "true"
+      LOG_FORMAT: detailed
+      LOG_TO_CONSOLE: "true"
+      LOG_TO_FILE: "true"
+
+      # 🔒 Security Hardening (wie Produktion)
+      ENABLE_RATE_LIMITING: "true"
+      ENABLE_BRUTE_FORCE_PROTECTION: "true"
+      MAX_LOGIN_ATTEMPTS: 5
+      LOGIN_BLOCK_DURATION: 900
+      ENABLE_SECURITY_MONITORING: "true"
     volumes:
       - uploads_data:/app/uploads
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s
       timeout: 10s
       retries: 3

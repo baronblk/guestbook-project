@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { adminApi } from '../api';
 import { Review } from '../types';
-import RatingStars from './RatingStars';
 import Pagination from './Pagination';
+import RatingStars from './RatingStars';
 
 const ModerationPanel: React.FC = () => {
   const [pendingReviews, setPendingReviews] = useState<Review[]>([]);
@@ -19,7 +19,7 @@ const ModerationPanel: React.FC = () => {
         page: currentPage,
         per_page: 10
       });
-      
+
       setPendingReviews(response.reviews);
       setTotalPages(Math.ceil(response.total / 10));
       setTotalReviews(response.total);
@@ -53,7 +53,7 @@ const ModerationPanel: React.FC = () => {
     if (!window.confirm('Sind Sie sicher, dass Sie diese Bewertung ablehnen möchten?')) {
       return;
     }
-    
+
     try {
       await adminApi.rejectReview(id);
       toast.success('Bewertung abgelehnt');
@@ -71,8 +71,8 @@ const ModerationPanel: React.FC = () => {
           <div>
             <h3 className="text-lg font-medium">Moderationsbereich</h3>
             <p className="text-sm text-gray-600 mt-1">
-              {totalReviews === 0 
-                ? 'Keine ausstehenden Bewertungen' 
+              {totalReviews === 0
+                ? 'Keine ausstehenden Bewertungen'
                 : `${totalReviews} Bewertung${totalReviews !== 1 ? 'en' : ''} warten auf Freischaltung`
               }
             </p>
@@ -134,15 +134,15 @@ const ModerationPanel: React.FC = () => {
                           Ausstehend
                         </span>
                       </div>
-                      
+
                       {review.title && (
                         <h5 className="text-sm font-medium text-gray-700 mb-1">
                           {review.title}
                         </h5>
                       )}
-                      
+
                       <p className="text-gray-700 mb-2">{review.content}</p>
-                      
+
                       <div className="text-xs text-gray-500">
                         Eingereicht am: {new Date(review.created_at).toLocaleDateString('de-DE', {
                           year: 'numeric',
@@ -152,14 +152,14 @@ const ModerationPanel: React.FC = () => {
                           minute: '2-digit'
                         })}
                       </div>
-                      
+
                       {review.email && (
                         <div className="text-xs text-gray-500 mt-1">
                           E-Mail: {review.email}
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="flex flex-col space-y-2 ml-4">
                       <button
                         onClick={() => handleApproveReview(review.id)}
@@ -167,7 +167,7 @@ const ModerationPanel: React.FC = () => {
                       >
                         ✓ Genehmigen
                       </button>
-                      
+
                       <button
                         onClick={() => handleRejectReview(review.id)}
                         className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
@@ -176,11 +176,11 @@ const ModerationPanel: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                  
+
                   {review.image_path && (
                     <div className="mt-3">
                       <img
-                        src={`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${review.image_path}`}
+                        src={`${window.location.origin}${review.image_path}`}
                         alt="Review-Bild"
                         className="max-w-xs rounded-lg border border-gray-200"
                       />

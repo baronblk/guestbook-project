@@ -14,9 +14,23 @@
   ],
   "typescript.preferences.importModuleSpecifier": "relative",
   "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.suggest.autoImports": true,
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.inlayHints.parameterNames.enabled": "literals",
+  "typescript.inlayHints.variableTypes.enabled": false,
+  "eslint.enable": true,
   "eslint.workingDirectories": [
     "frontend"
   ],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.options": {
+    "cache": false
+  },
   "files.exclude": {
     "**/.git": true,
     "**/.DS_Store": true,
@@ -46,7 +60,6 @@
     "typescript": "html",
     "typescriptreact": "html"
   },
-  "typescript.preferences.includePackageJsonAutoImports": "on",
   "editor.rulers": [
     80,
     100

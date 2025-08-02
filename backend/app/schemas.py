@@ -31,6 +31,12 @@ class ReviewBase(BaseModel):
             raise ValueError('Bewertungstext muss mindestens 10 Zeichen haben')
         return v.strip()
 
+    @validator('email', pre=True)
+    def validate_email(cls, v):
+        if v == "" or v is None:
+            return None
+        return v
+
 class ReviewCreate(ReviewBase):
     """Schema für neue Bewertung"""
     pass

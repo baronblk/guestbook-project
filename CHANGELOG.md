@@ -7,6 +7,55 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [3.0.5-uploads-fix] - 2025-01-27
+
+### 🔧 Kritische Upload-Fehlerbehebung
+- **HOTFIX**: Bildanzeige-Problem bei Gästebucheinträgen behoben
+  - nginx `Permission denied` Fehler für `/uploads/*` Dateien korrigiert
+  - Docker-Container-Berechtigungen für www-data Benutzer/Gruppe eingerichtet
+  - Runtime-Berechtigungskorrektur mit `/fix-permissions.sh` Entrypoint-Skript
+- Multi-Platform Docker-Build für ARM64 und AMD64 Architekturen
+- Portainer-Stack-Konfiguration für verbesserte Upload-Verarbeitung aktualisiert
+
+### 🐛 Bug Fixes
+- Fehlende Dateiberechtigungen in Docker-Container behoben
+- nginx-Zugriff auf Upload-Verzeichnis korrigiert (`/app/uploads/`)
+- Docker-Volume-Mapping-Berechtigungen für Synology NAS optimiert
+
+### 🏗️ Infrastruktur-Verbesserungen
+- Neue Docker-Image: `ghcr.io/baronblk/guestbook-project:3.0.5-uploads-fix`
+- Multi-Platform Build mit Docker Buildx (linux/amd64, linux/arm64)
+- Erweiterte Portainer-Stack-Dokumentation mit Deployment-Anweisungen
+- Verbesserte stdout/stderr-Logging-Konfiguration
+
+### 📚 Dokumentation
+- README.md mit umfassendem Troubleshooting-Bereich erweitert
+- Upload-Problem-Diagnostik und Lösungsschritte hinzugefügt
+- Docker-Image-Versionsübersicht aktualisiert
+- Portainer-Deployment-Anweisungen verbessert
+
+### 🧪 Debugging-Verbesserungen
+- Debug-Befehle für Container-Berechtigungsprüfung dokumentiert
+- Log-Analyse-Anleitungen für Upload-Probleme hinzugefügt
+- Schritt-für-Schritt-Fehlerbehebungshandbuch erstellt
+
+## [3.0.4-portainer-logs] - 2025-01-27
+
+### 🏗️ Infrastruktur-Verbesserungen
+- Erweiterte Portainer-Kompatibilität mit optimierten Logging-Einstellungen
+- Stdout/stderr-Logging für bessere Container-Überwachung
+- Docker-Image für Portainer-Deployments optimiert
+
+## [3.0.0] - 2025-01-27
+
+### 🚀 Major Release
+- Grundlegende Anwendungsarchitektur etabliert
+- FastAPI Backend mit SQLAlchemy ORM
+- React Frontend mit TailwindCSS
+- MariaDB Datenbank-Integration
+- Docker-Containerisierung aller Services
+- nginx Reverse Proxy-Konfiguration
+
 ## [2.0.0] - 2025-07-30
 
 ### 🔐 Security Enhancements

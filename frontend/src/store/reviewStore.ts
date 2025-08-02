@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { ReviewStore, ReviewFilters, ReviewFilter, CreateReviewForm } from '../types';
-import { publicApi, adminApi, apiUtils } from '../api';
+import { adminApi, apiUtils, publicApi } from '../api';
+import { CreateReviewForm, ReviewFilter, ReviewFilters, ReviewStore } from '../types';
 
 export const useReviewStore = create<ReviewStore>((set, get) => ({
   reviews: [],
@@ -33,7 +33,7 @@ export const useReviewStore = create<ReviewStore>((set, get) => ({
       };
 
       const response = await publicApi.getReviews(params);
-      
+
       set({
         reviews: response.reviews,
         pagination: {
@@ -57,8 +57,14 @@ export const useReviewStore = create<ReviewStore>((set, get) => ({
 
   createReview: async (reviewData: CreateReviewForm) => {
     try {
-      const review = await publicApi.createReview(reviewData);
-      
+      // Clean up data - remove empty email strings
+      const cleanData = {
+        ...reviewData,
+        email: reviewData.email && reviewData.email.trim() !== '' ? reviewData.email : undefined
+      };
+
+      const review = await publicApi.createReview(cleanData);
+
       // Upload image if provided
       if (reviewData.image) {
         await publicApi.uploadReviewImage(review.id, reviewData.image);
@@ -92,11 +98,11 @@ export const useReviewStore = create<ReviewStore>((set, get) => ({
       if (!review) return;
 
       await adminApi.updateReview(id, { is_approved: !review.is_approved });
-      
+
       // Update local state
       set(state => ({
-        reviews: state.reviews.map(r => 
-          r.id === id 
+        reviews: state.reviews.map(r =>
+          r.id === id
             ? { ...r, is_approved: !r.is_approved, is_visible: !r.is_approved }
             : r
         )

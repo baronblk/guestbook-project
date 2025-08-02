@@ -65,9 +65,26 @@ app.add_middleware(
 )
 
 # Trusted Host Middleware für zusätzliche Sicherheit
+# ERWEITERT für externe Domain-Zugriffe
+import os
+allowed_hosts = ["localhost", "127.0.0.1", "*.localhost"]
+
+# Zusätzliche Hosts aus Umgebungsvariable
+allowed_hosts_env = os.getenv("ALLOWED_HOSTS", "")
+if allowed_hosts_env:
+    if allowed_hosts_env == "*":
+        # Alle Hosts erlauben (für Debugging)
+        allowed_hosts = ["*"]
+    else:
+        # Spezifische Hosts hinzufügen
+        additional_hosts = [host.strip() for host in allowed_hosts_env.split(",")]
+        allowed_hosts.extend(additional_hosts)
+
+print(f"🔧 Allowed hosts: {allowed_hosts}")
+
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["localhost", "127.0.0.1", "*.localhost"]
+    allowed_hosts=allowed_hosts
 )
 
 # Static Files für Uploads

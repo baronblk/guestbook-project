@@ -1,219 +1,3 @@
-# 📝 Guestbook - Full Stack Web Application
-
-Ein modernes, vollständig containerisiertes Gästebuch-System mit Session-Management und Admin-Panel.
-
-## 🏗️ Architektur
-
-- **Frontend**: React 18 + TypeScript + Zustand (State Management)
-- **Backend**: FastAPI + SQLAlchemy + JWT Authentication
-- **Database**: MariaDB 10.11
-- **Containerization**: Docker + Docker Compose
-- **Deployment**: GitHub Container Registry (GHCR) + Portainer
-
-## ✨ Features
-
-### 🌟 **Frontend (React + TypeScript + TailwindCSS)**
-- ✅ **Bewertungsformular** mit Sterne-Rating (1-5), Name, E-Mail, Titel, Text (max. 5000 Zeichen)
-- ✅ **Bild-Upload** mit automatischer Größenänderung und Optimierung
-- ✅ **Live-Zeichenzähler** und Validierung
-- ✅ **Bewertungsliste** mit Pagination, Filterung und Sortierung
-- ✅ **Responsive Design** für Mobile/Desktop
-- ✅ **iFrame-kompatible Einbettung** (`/embed`)
-- ✅ **Admin-Panel** mit Login und Verwaltungsfunktionen
-- ✅ **Toast-Benachrichtigungen** und Loading-States
-
-### ⚡ **Backend (FastAPI + SQLAlchemy + Python)**
-- ✅ **REST API** mit automatischer OpenAPI-Dokumentation
-- ✅ **Datenbankmodelle** für Reviews und Admin-Users
-- ✅ **JWT-Authentifizierung** für Admin-Zugang
-- ✅ **Bild-Upload** mit Validierung und Verarbeitung (PIL)
-- ✅ **Rate Limiting** gegen Spam
-- ✅ **Bulk-Import** von externen Bewertungen (JSON)
-- ✅ **Export-Funktion** für Datenbackups
-- ✅ **Admin-Features**: Moderierung, Featured Reviews, Statistiken
-
-### 🗄️ **Datenbank (MariaDB)**
-- ✅ **Vollständiges Schema** mit Reviews, Admin-Users
-- ✅ **Health Checks** und Retry-Logik
-- ✅ **Persistent Storage** mit Docker Volumes
-
-## 🚀 Installation & Setup
-
-### Voraussetzungen
-- Docker & Docker Compose
-- Git
-
-### 1. Repository klonen
-```bash
-git clone https://github.com/baronblk/guestbook-project.git
-cd guestbook-project
-```
-
-### 2. Development Setup (Docker Desktop)
-
-#### Option A: Standard Development
-```bash
-docker-compose up --build
-```
-
-#### Option B: Development mit Hot Reload
-```bash
-docker-compose -f docker-compose.dev.yml up --build
-```
-
-#### Option C: NPM Scripts verwenden
-```bash
-npm run dev          # Development mit Hot Reload
-npm start           # Standard Build
-npm run dev:detached # Im Hintergrund
-```
-
-### 3. Anwendung öffnen
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **API Dokumentation**: http://localhost:8000/docs
-- **Embed Widget**: http://localhost:3000/embed
-- **Admin-Panel**: http://localhost:3000/admin
-- **phpMyAdmin** (nur dev): http://localhost:8080
-
-### 4. Admin-Login
-- **Username**: `admin`
-- **Passwort**: `admin123`
-- ⚠️ **Bitte nach dem ersten Login ändern!**
-
-## 🏭 Production Deployment
-
-### Option 1: UGreen NAS + Portainer Stack
-1. Images werden automatisch zu GHCR.io gepusht
-2. `docker-compose.portainer.yml` in Portainer importieren
-3. Environment Variables setzen
-4. Stack deployen
-
-**Siehe [DEPLOYMENT-GUIDE.md](./DEPLOYMENT-GUIDE.md) für Details!**
-
-### Option 2: Docker Images von GHCR.io
-```bash
-# Backend
-docker pull ghcr.io/baronblk/guestbook-project/backend:latest
-
-# Frontend  
-docker pull ghcr.io/baronblk/guestbook-project/frontend:latest
-```
-
-## 📁 Projektstruktur
-
-```
-guestbook-project/
-├── backend/
-│   ├── app/
-│   │   ├── __init__.py
-│   │   ├── main.py              # FastAPI App
-│   │   ├── models.py            # SQLAlchemy Models
-│   │   ├── schemas.py           # Pydantic Schemas
-│   │   ├── crud.py              # Database Operations
-│   │   ├── database.py          # DB Connection & Config
-│   │   ├── auth.py              # JWT Authentication
-│   │   └── utils.py             # File Management & Utils
-│   ├── uploads/                 # Uploaded Images
-│   ├── wait-for-db.py          # DB Connection Wait Script
-│   ├── create_admin.py         # Admin User Setup
-│   ├── requirements.txt        # Python Dependencies
-│   └── Dockerfile
-├── frontend/
-│   ├── src/
-│   │   ├── components/         # React Components
-│   │   ├── store/             # Zustand State Management
-│   │   ├── types.ts           # TypeScript Types
-│   │   ├── api.ts             # API Service Layer
-│   │   ├── App.tsx            # Main App Component
-│   │   ├── index.tsx          # React Entry Point
-│   │   └── index.css          # TailwindCSS Styles
-│   ├── public/
-│   ├── package.json
-│   ├── tailwind.config.js
-│   └── Dockerfile
-└── docker-compose.yml
-```
-
-## 🔧 Konfiguration
-
-### Umgebungsvariablen (docker-compose.yml)
-
-#### Backend
-```yaml
-environment:
-  DB_HOST: db
-  DB_USER: guestuser
-  DB_PASSWORD: guestpw
-  DB_NAME: guestbook
-  JWT_SECRET_KEY: your-super-secret-jwt-key-change-in-production
-  ADMIN_USERNAME: admin
-  ADMIN_EMAIL: admin@guestbook.local
-  ADMIN_PASSWORD: admin123
-```
-
-#### Frontend
-```yaml
-environment:
-  REACT_APP_API_URL: http://localhost:8000
-```
-
-## 📊 API-Endpunkte
-
-### 🌐 **Öffentliche API**
-- `GET /api/reviews` - Bewertungen abrufen (mit Filterung/Pagination)
-- `POST /api/reviews` - Neue Bewertung erstellen
-- `POST /api/reviews/{id}/image` - Bild zu Bewertung hochladen
-- `GET /api/reviews/{id}` - Einzelne Bewertung abrufen
-- `GET /api/stats` - Öffentliche Statistiken
-- `GET /embed` - Einbettbares Widget
-
-### 🔐 **Admin API** (JWT-Token erforderlich)
-- `POST /api/admin/login` - Admin-Login
-- `GET /api/admin/reviews` - Alle Bewertungen (inkl. nicht genehmigte)
-- `PUT /api/admin/reviews/{id}` - Bewertung bearbeiten
-- `DELETE /api/admin/reviews/{id}` - Bewertung löschen
-- `POST /api/admin/reviews/import` - Bulk-Import
-- `GET /api/admin/stats` - Vollständige Statistiken
-- `GET /api/admin/export` - Datenexport
-
-## 🎨 Frontend-Features
-
-### Komponenten
-- **RatingStars**: Interaktive Sterne-Bewertung
-- **Pagination**: Intelligente Seitennavigation
-- **ReviewForm**: Vollständiges Formular mit Validierung
-- **ReviewList**: Gefilterte und sortierte Bewertungsliste
-- **AdminDashboard**: Umfassendes Verwaltungspanel
-- **Layout**: Responsive Hauptlayout
-
-### State Management (Zustand)
-- **ReviewStore**: Bewertungen, Filter, Pagination
-- **AuthStore**: Admin-Authentifizierung mit Persistierung
-
-### Styling (TailwindCSS)
-- Responsive Design
-- Custom Components & Utilities
-- Dark Mode vorbereitet
-- Print-Styles
-- Animationen & Transitions
-
-## 💾 Datenbank-Schema
-
-### Reviews Table
-```sql
-id, name, email, rating, title, content, image_path,
-created_at, updated_at, is_approved, is_featured,
-admin_notes, import_source, external_id, ip_address
-```
-
-### Admin Users Table
-```sql
-id, username, email, hashed_password, is_active,
-is_superuser, created_at, last_login
-```
-
-## 🛡️ Sicherheitsfeatures
 
 - **JWT-Token Authentifizierung** für Admin-Bereich
 - **Rate Limiting** gegen Spam (IP-basiert)
@@ -312,12 +96,78 @@ Vorbereitet für i18n:
 
 MIT License - Siehe LICENSE Datei
 
-## 🆘 Support
+## 🆘 Support & Troubleshooting
+
+### Häufige Probleme und Lösungen
+
+#### 1. **Bilder werden nicht angezeigt** (behoben in v3.0.5)
+```bash
+# Problem: nginx "Permission denied" für /uploads/*
+# Symptom: Hochgeladene Bilder zeigen 403-Fehler
+# Lösung: Update auf v3.0.5-uploads-fix
+docker pull ghcr.io/baronblk/guestbook-project:3.0.5-uploads-fix
+```
+
+#### 2. **Logs nicht in Portainer sichtbar** (behoben in v3.0.4)
+```bash
+# Problem: Logs werden nur in Dateien geschrieben
+# Lösung: stdout/stderr Logging in v3.0.4+
+# Alle Logs erscheinen jetzt im Portainer "Container Logs" Tab
+```
+
+#### 3. **422 Fehler bei externen Domains** (behoben in v3.0.3)
+```bash
+# Problem: TrustedHostMiddleware blockt externe Domains
+# Lösung: ALLOWED_HOSTS="*" in v3.0.3+
+```
+
+### Debug-Befehle
+```bash
+# Container-Status prüfen
+docker ps -a
+
+# Logs anzeigen
+docker logs guestbook-app-container
+
+# In Container einsteigen
+docker exec -it guestbook-app-container /bin/bash
+
+# Upload-Berechtigungen prüfen
+docker exec -it guestbook-app-container ls -la /app/uploads/
+
+# Nginx-Konfiguration prüfen
+docker exec -it guestbook-app-container cat /etc/nginx/sites-available/default
+```
 
 Bei Problemen:
-1. Logs prüfen: `docker-compose logs`
-2. Container neu starten: `docker-compose restart`
-3. Clean Build: `docker-compose down && docker-compose up --build`
+1. **Logs prüfen**: Portainer Container Logs Tab oder `docker logs`
+2. **Container neu starten**: `docker restart guestbook-app-container`
+3. **Clean Build**: `docker-compose down && docker-compose up --build`
+4. **Image Update**: `docker pull ghcr.io/baronblk/guestbook-project:3.0.5-uploads-fix`
+5. **Portainer Stack**: Verwende die finale `portainer-stack.yml` für Deployment
+
+## 🐳 Docker-Images
+
+### Verfügbare Dockerfiles
+- **`fix-uploads-permissions.dockerfile`** - Finale Version v3.0.5-uploads-fix (produktiv)
+- **`Dockerfile.combined`** - Kombiniertes Frontend + Backend Image
+- **`backend/Dockerfile`** - Separates Backend für Entwicklung
+- **`frontend/Dockerfile`** - Separates Frontend für Entwicklung
+
+### Build-Befehle
+```bash
+# Finale Version (Upload-Fix)
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -f fix-uploads-permissions.dockerfile \
+  -t ghcr.io/baronblk/guestbook-project:3.0.5-uploads-fix \
+  --push .
+
+# Kombinierte Version
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -f Dockerfile.combined \
+  -t ghcr.io/baronblk/guestbook-project:latest \
+  --push .
+```
 
 ---
 
